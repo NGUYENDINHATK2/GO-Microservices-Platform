@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>go-ms — Production-Ready Go Microservices</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d29922;
+    --purple: #bc8cff;
+    --red: #f85149;
+    --pink: #f778ba;
+    --cyan: #79c0ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(13,17,23,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  nav .inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  nav .logo { font-weight: 700; font-size: 1.25rem; color: var(--accent); text-decoration: none; }
+  nav .logo span { color: var(--text2); font-weight: 400; }
+  nav .links { display: flex; gap: 1.5rem; }
+  nav .links a {
+    color: var(--text2); text-decoration: none; font-size: 0.875rem;
+    transition: color 0.2s;
+  }
+  nav .links a:hover { color: var(--text); }
+
+  /* SECTIONS */
+  section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+  .section-title {
+    font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;
+  }
+  .section-sub {
+    color: var(--text2); margin-bottom: 3rem; font-size: 1.05rem;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding-top: 60px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.3);
+    color: var(--accent);
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--text2);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+  }
+  .hero-stats {
+    display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center;
+  }
+  .stat { text-align: center; }
+  .stat-val {
+    font-size: 2.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--green), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { color: var(--text2); font-size: 0.85rem; }
+
+  /* ARCHITECTURE */
+  .arch-diagram {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--text2);
+    white-space: pre;
+  }
+  .arch-diagram .hl-blue { color: var(--accent); }
+  .arch-diagram .hl-green { color: var(--green); }
+  .arch-diagram .hl-purple { color: var(--purple); }
+  .arch-diagram .hl-orange { color: var(--orange); }
+  .arch-diagram .hl-pink { color: var(--pink); }
+  .arch-diagram .hl-cyan { color: var(--cyan); }
+  .arch-diagram .hl-red { color: var(--red); }
+
+  /* GRID CARDS */
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .card p { color: var(--text2); font-size: 0.9rem; }
+
+  /* TECH STACK ICONS */
+  .tech-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* SERVICE CARDS */
+  .svc-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: border-color 0.2s;
+  }
+  .svc-card:hover { border-color: var(--accent); }
+  .svc-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .svc-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .svc-card h3 { font-size: 1.25rem; }
+  .svc-port {
+    display: inline-block;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: var(--text2);
+    margin-left: 0.5rem;
+  }
+  .svc-card .endpoints {
+    list-style: none; margin-top: 1rem;
+  }
+  .svc-card .endpoints li {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .svc-card .endpoints li:last-child { border-bottom: none; }
+  .method {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: monospace;
+    min-width: 42px;
+    text-align: center;
+  }
+  .method-get { background: rgba(63,185,80,0.15); color: var(--green); }
+  .method-post { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .method-put { background: rgba(210,153,34,0.15); color: var(--orange); }
+  .method-del { background: rgba(248,81,73,0.15); color: var(--red); }
+
+  .endpoint-path {
+    font-family: monospace; color: var(--text2); font-size: 0.8rem;
+  }
+
+  /* PATTERN CARDS */
+  .pattern-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .pattern-card:hover { border-color: var(--purple); }
+  .pattern-num {
+    font-size: 2rem; font-weight: 800;
+    color: var(--bg3);
+    margin-bottom: 0.5rem;
+  }
+  .pattern-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .pattern-card p { color: var(--text2); font-size: 0.85rem; }
+
+  /* LAYER DIAGRAM */
+  .layer-stack {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    max-width: 700px; margin: 2rem auto;
+  }
+  .layer {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+  }
+  .layer-sub { font-weight: 400; font-size: 0.8rem; opacity: 0.7; }
+  .layer-arrow {
+    text-align: center;
+    color: var(--text2);
+    font-size: 1.2rem;
+  }
+
+  /* PERF */
+  .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; }
+  .perf-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .perf-val {
+    font-size: 3rem; font-weight: 800;
+    margin-bottom: 0.25rem;
+  }
+  .perf-unit { color: var(--text2); font-size: 0.85rem; }
+  .perf-label { color: var(--text2); font-size: 0.9rem; margin-top: 0.5rem; }
+
+  /* QUICKSTART */
+  .code-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.875rem;
+    overflow-x: auto;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+  .code-block .comment { color: var(--text2); }
+  .code-block .cmd { color: var(--green); }
+  .code-block .flag { color: var(--orange); }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0.15rem;
+  }
+  .tag-blue { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .tag-orange { background: rgba(210,153,34,0.15); color: var(--orange); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text2);
+    font-size: 0.85rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* INFRA TABLE */
+  .infra-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+  }
+  .infra-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border);
+    color: var(--text2);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .infra-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .infra-table tr:hover td { background: var(--bg2); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav .links { display: none; }
+    section { padding: 3rem 1.25rem; }
+    .hero-stats { gap: 1.5rem; }
+    .stat-val { font-size: 2rem; }
+    .arch-diagram { font-size: 0.65rem; padding: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a href="#" class="logo">go-ms <span>microservices</span></a>
+    <div class="links">
+      <a href="#architecture">Architecture</a>
+      <a href="#stack">Tech Stack</a>
+      <a href="#services">Services</a>
+      <a href="#patterns">Patterns</a>
+      <a href="#api">API</a>
+      <a href="#performance">Performance</a>
+      <a href="#quickstart">Quick Start</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-badge">Go 1.25 &middot; DDD/CQRS &middot; Production-Ready</div>
+  <h1>
+    <span class="gradient">go-ms</span><br>
+    Microservices Platform
+  </h1>
+  <p>
+    A production-ready Go microservices system built with Domain-Driven Design,
+    CQRS, event-driven architecture, and cloud-native infrastructure.
+  </p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-val">3</div>
+      <div class="stat-label">Microservices</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">125+</div>
+      <div class="stat-label">Go Source Files</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">73k</div>
+      <div class="stat-label">Requests/sec</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">15+</div>
+      <div class="stat-label">API Endpoints</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">9</div>
+      <div class="stat-label">Docker Services</div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <h2 class="section-title">System Architecture</h2>
+  <p class="section-sub">Multi-module monorepo with 4 Go modules connected via go.work</p>
+
+  <div class="arch-diagram"><span class="hl-blue">                              Clients (Web / Mobile / API)</span>
+                                        |
+                                        v
+                          <span class="hl-cyan">+---------------------------+</span>
+                          <span class="hl-cyan">|      API Gateway :8000    |</span>
+                          <span class="hl-cyan">|  Reverse Proxy + Auth     |</span>
+                          <span class="hl-cyan">|  Circuit Breaker          |</span>
+                          <span class="hl-cyan">|  Rate Limiting + CORS     |</span>
+                          <span class="hl-cyan">|  Prometheus Metrics       |</span>
+                          <span class="hl-cyan">+---------------------------+</span>
+                            /           |             \
+                    <span class="hl-green">HTTP</span>             <span class="hl-purple">gRPC</span>             <span class="hl-green">HTTP</span>
+                     /              (auth)              \
+                    v                 |                   v
+    <span class="hl-green">+---------------------+</span>        |         <span class="hl-orange">+---------------------+</span>
+    <span class="hl-green">|  Identity Service   |</span>&lt;-------+         <span class="hl-orange">|   Ticket Service    |</span>
+    <span class="hl-green">|  :8001  :50051      |</span>                  <span class="hl-orange">|  :8002  :50052      |</span>
+    <span class="hl-green">|                     |</span>                  <span class="hl-orange">|                     |</span>
+    <span class="hl-green">| - Registration/OTP  |</span>                  <span class="hl-orange">| - CRUD + Caching    |</span>
+    <span class="hl-green">| - JWT Auth          |</span>                  <span class="hl-orange">| - Reserve/Release   |</span>
+    <span class="hl-green">| - User Profiles     |</span>                  <span class="hl-orange">| - 3-Layer Cache     |</span>
+    <span class="hl-green">+---------------------+</span>                  <span class="hl-orange">+---------------------+</span>
+           |         |                           |         |
+           v         v                           v         v
+    <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>          <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>
+    <span class="hl-pink">| identity  |</span> <span class="hl-red">|   Redis   |</span>          <span class="hl-pink">| ticket    |</span> <span class="hl-red">|   Redis   |</span>
+    <span class="hl-pink">|   _db     |</span> <span class="hl-red">|   :6379   |</span>          <span class="hl-pink">|   _db     |</span> <span class="hl-red">|   :6379   |</span>
+    <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>          <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>
+         <span class="hl-pink">PostgreSQL :5434</span>                     <span class="hl-pink">PostgreSQL :5434</span>
+                          \                 /
+                           v               v
+                    <span class="hl-orange">+-------------------------+</span>
+                    <span class="hl-orange">|    Kafka  :9093         |</span>
+                    <span class="hl-orange">|  Transactional Outbox   |</span>
+                    <span class="hl-orange">|  identity-events topic  |</span>
+                    <span class="hl-orange">|  ticket-events topic    |</span>
+                    <span class="hl-orange">+-------------------------+</span></div>
+</section>
+
+<!-- DDD LAYERS -->
+<section id="ddd">
+  <h2 class="section-title">DDD Layer Architecture</h2>
+  <p class="section-sub">Strict dependency rule: outer layers depend inward, domain has zero external dependencies</p>
+
+  <div class="layer-stack">
+    <div class="layer" style="background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); color:var(--accent);">
+      Interfaces (HTTP Controllers, gRPC Handlers, Middleware)
+      <div class="layer-sub">Gin routes, request validation, response formatting</div>
+    </div>
+    <div class="layer-arrow">&darr;</div>
+    <div class="layer" style="background:rgba(63,185,80,0.12); border:1px solid rgba(63,185,80,0.3); color:var(--green);">
+      Application (CQRS Commands &amp; Queries, DTOs)
+      <div class="layer-sub">Business orchestration, command/query separation</div>
+    </div>
+    <div class="layer-arrow">&darr;</div>
+    <div class="layer" style="background:rgba(188,140,255,0.12); border:1px solid rgba(188,140,255,0.3); color:var(--purple);">
+      Domain (Entities, Value Objects, Aggregate Roots, Events, Repository Interfaces)
+      <div class="layer-sub">Pure business logic &mdash; ZERO external dependencies</div>
+    </div>
+    <div class="layer-arrow">&uarr;</div>
+    <div class="layer" style="background:rgba(210,153,34,0.12); border:1px solid rgba(210,153,34,0.3); color:var(--orange);">
+      Infrastructure (PostgreSQL Repos, Redis Cache, Kafka, gRPC Client, Security)
+      <div class="layer-sub">Implements domain interfaces, talks to external systems</div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:2rem;">
+    <div class="code-block" style="display:inline-block; text-align:left; max-width:600px;">
+<span class="comment"># Per-service directory structure</span>
+<span class="cmd">internal/</span>
+  <span class="cmd">domain/{aggregate}/</span>      <span class="comment"># entity, value_objects, repository, events, errors</span>
+  <span class="cmd">application/</span>
+    <span class="cmd">command/{aggregate}/</span>   <span class="comment"># write operations (CQRS)</span>
+    <span class="cmd">query/{aggregate}/</span>     <span class="comment"># read operations (CQRS)</span>
+  <span class="cmd">infrastructure/</span>
+    <span class="cmd">persistence/postgres/</span>  <span class="comment"># repository implementations</span>
+    <span class="cmd">persistence/redis/</span>     <span class="comment"># cache implementations</span>
+    <span class="cmd">cache/</span>                 <span class="comment"># multi-layer cache coordinator</span>
+  <span class="cmd">interfaces/http/</span>
+    <span class="cmd">controller/</span>            <span class="comment"># Gin handlers</span>
+    <span class="cmd">middleware/</span>            <span class="comment"># auth, rate limiting</span>
+    <span class="cmd">router/</span>                <span class="comment"># route registration</span></div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="stack">
+  <h2 class="section-title">Tech Stack</h2>
+  <p class="section-sub">Modern, battle-tested technologies for every layer</p>
+
+  <div class="grid grid-4">
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(0,173,216,0.15); color:#00ADD8;">Go</div>
+      <h3>Go 1.25</h3>
+      <p>Core language. Multi-module monorepo with go.work workspace.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(88,166,255,0.15); color:var(--accent);">Gin</div>
+      <h3>Gin Framework</h3>
+      <p>High-performance HTTP framework with middleware support.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(188,140,255,0.15); color:var(--purple);">gRPC</div>
+      <h3>gRPC + Protobuf</h3>
+      <p>Inter-service communication. Token validation via gRPC.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(51,103,145,0.2); color:#336791;">PG</div>
+      <h3>PostgreSQL 16</h3>
+      <p>Primary datastore. Goose migrations + sqlc type-safe queries.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(220,59,47,0.15); color:#DC3B2F;">R</div>
+      <h3>Redis 7</h3>
+      <p>Cache (L2), rate limiting, distributed locks, OTP storage, Pub/Sub.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(210,153,34,0.15); color:var(--orange);">K</div>
+      <h3>Apache Kafka</h3>
+      <p>Event streaming via Transactional Outbox pattern. Snappy compression.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(63,185,80,0.15); color:var(--green);">D</div>
+      <h3>Docker + K8s</h3>
+      <p>Multi-stage builds (scratch). K8s manifests with HPA auto-scaling.</p>
+    </div>
+    <div class="card">
+      <div class="tech-icon" style="background:rgba(248,81,73,0.15); color:var(--red);">P</div>
+      <h3>Prometheus + Grafana</h3>
+      <p>HTTP/gRPC metrics, custom dashboards, service monitoring.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <h2 class="section-title">Microservices</h2>
+  <p class="section-sub">Three services with clear bounded contexts and independent databases</p>
+
+  <div class="grid grid-3">
+    <!-- Identity -->
+    <div class="svc-card">
+      <div class="svc-header">
+        <div class="svc-dot" style="background:var(--green);"></div>
+        <h3>Identity Service</h3>
+        <span class="svc-port">:8001</span>
+        <span class="svc-port">:50051 gRPC</span>
+      </div>
+      <p style="color:var(--text2); font-size:0.9rem; margin-bottom:0.75rem;">
+        User authentication, registration with OTP verification, JWT token management, and profile CRUD.
+      </p>
+      <div style="margin-bottom:0.75rem;">
+        <span class="tag tag-green">JWT Dual Token</span>
+        <span class="tag tag-blue">OTP Verification</span>
+        <span class="tag tag-purple">bcrypt</span>
+        <span class="tag tag-orange">gRPC Server</span>
+      </div>
+      <ul class="endpoints">
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/register</span></li>
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/verify-otp</span></li>
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/login</span></li>
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/set-password</span></li>
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/logout</span></li>
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/user/profile</span></li>
+        <li><span class="method method-put">PUT</span> <span class="endpoint-path">/api/v1/user/profile</span></li>
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/users/:id</span></li>
+      </ul>
+    </div>
+
+    <!-- Ticket -->
+    <div class="svc-card">
+      <div class="svc-header">
+        <div class="svc-dot" style="background:var(--orange);"></div>
+        <h3>Ticket Service</h3>
+        <span class="svc-port">:8002</span>
+        <span class="svc-port">:50052 gRPC</span>
+      </div>
+      <p style="color:var(--text2); font-size:0.9rem; margin-bottom:0.75rem;">
+        Ticket management with stock reservation, 3-layer cache, singleflight dedup, and distributed locking.
+      </p>
+      <div style="margin-bottom:0.75rem;">
+        <span class="tag tag-green">3-Layer Cache</span>
+        <span class="tag tag-blue">Singleflight</span>
+        <span class="tag tag-purple">Distributed Lock</span>
+        <span class="tag tag-orange">SWR</span>
+      </div>
+      <ul class="endpoints">
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/tickets/:id</span></li>
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/tickets/:id/detail</span></li>
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/tickets/reserve</span></li>
+        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/tickets/release</span></li>
+      </ul>
+    </div>
+
+    <!-- Gateway -->
+    <div class="svc-card">
+      <div class="svc-header">
+        <div class="svc-dot" style="background:var(--accent);"></div>
+        <h3>API Gateway</h3>
+        <span class="svc-port">:8000</span>
+      </div>
+      <p style="color:var(--text2); font-size:0.9rem; margin-bottom:0.75rem;">
+        Reverse proxy with config-driven routing, circuit breaker, JWT validation via gRPC, and rate limiting.
+      </p>
+      <div style="margin-bottom:0.75rem;">
+        <span class="tag tag-green">Circuit Breaker</span>
+        <span class="tag tag-blue">Rate Limiting</span>
+        <span class="tag tag-purple">Reverse Proxy</span>
+        <span class="tag tag-orange">CORS</span>
+      </div>
+      <ul class="endpoints">
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/health/live</span></li>
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/health/ready</span></li>
+        <li><span class="method method-get">GET</span> <span class="endpoint-path">/metrics</span></li>
+        <li style="color:var(--text2); font-size:0.8rem; border:none; padding-top:0.5rem;">
+          Routes all /api/v1/* to backend services
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PATTERNS -->
+<section id="patterns">
+  <h2 class="section-title">Key Patterns</h2>
+  <p class="section-sub">Production-grade patterns for resilience, performance, and data consistency</p>
+
+  <div class="grid grid-3">
+    <div class="pattern-card">
+      <div class="pattern-num">01</div>
+      <h3>Domain-Driven Design</h3>
+      <p>Entities, Value Objects, Aggregate Roots with domain events. Domain layer has zero external dependencies. Repository interfaces defined in domain, implemented in infrastructure.</p>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-num">02</div>
+      <h3>CQRS</h3>
+      <p>Command/Query Responsibility Segregation. Write operations (commands) separated from read operations (queries) in the application layer for clear intent and scalability.</p>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-num">03</div>
+      <h3>Transactional Outbox</h3>
+      <p>Domain events saved atomically with aggregates, then reliably published to Kafka. Exponential backoff retries, auto-cleanup, graceful drain on shutdown.</p>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-num">04</div>
+      <h3>Circuit Breaker</h3>
+      <p>Gateway protects backends with sony/gobreaker. Configurable thresholds, half-open probing. Transport errors excluded from failure counting to prevent false trips.</p>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-num">05</div>
+      <h3>3-Layer Cache</h3>
+      <p>L1: Ristretto in-process (~100ns) &rarr; L2: Redis with SWR (~1ms) &rarr; L3: PostgreSQL. Singleflight dedup, distributed locks, negative caching, stampede prevention.</p>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-num">06</div>
+      <h3>Rate Limiting</h3>
+      <p>Redis-backed rate limiting with 3 tiers (global, per-IP, per-user). Configurable limits per endpoint. Trusted IPs bypass.</p>
+    </div>
+  </div>
+</section>
+
+<!-- API -->
+<section id="api">
+  <h2 class="section-title">API Response Format</h2>
+  <p class="section-sub">Consistent JSON response structure across all endpoints</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <div class="code-block">
+<span class="comment">// Success Response</span>
+{
+  <span class="cmd">"code"</span>: 20001,
+  <span class="cmd">"message"</span>: "Success",
+  <span class="cmd">"data"</span>: {
+    "id": "usr_abc123",
+    "email": "user@example.com",
+    "nickname": "gopher"
+  }
+}
+    </div>
+    <div class="code-block">
+<span class="comment">// Error Response</span>
+{
+  <span class="cmd">"code"</span>: <span class="flag">40004</span>,
+  <span class="cmd">"message"</span>: "Resource not found",
+  <span class="cmd">"data"</span>: null
+}
+
+<span class="comment">// Business Error Codes:</span>
+<span class="comment">// 20001  Success</span>
+<span class="comment">// 20003  Bad Request</span>
+<span class="comment">// 30001  Unauthorized</span>
+<span class="comment">// 40004  Not Found</span>
+<span class="comment">// 50001  Conflict</span>
+<span class="comment">// 90001  Server Error</span>
+    </div>
+  </div>
+</section>
+
+<!-- INFRASTRUCTURE -->
+<section id="infra">
+  <h2 class="section-title">Infrastructure Stack</h2>
+  <p class="section-sub">Docker Compose for local dev, Kubernetes for production</p>
+
+  <table class="infra-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Technology</th>
+        <th>Port</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>API Gateway</strong></td>
+        <td>Go / Gin</td>
+        <td style="font-family:monospace; color:var(--cyan);">:8000</td>
+        <td>Reverse proxy, auth, rate limiting</td>
+      </tr>
+      <tr>
+        <td><strong>Identity Service</strong></td>
+        <td>Go / Gin + gRPC</td>
+        <td style="font-family:monospace; color:var(--green);">:8001 :50051</td>
+        <td>Auth, users, JWT</td>
+      </tr>
+      <tr>
+        <td><strong>Ticket Service</strong></td>
+        <td>Go / Gin + gRPC</td>
+        <td style="font-family:monospace; color:var(--orange);">:8002 :50052</td>
+        <td>Tickets, caching, reservations</td>
+      </tr>
+      <tr>
+        <td><strong>PostgreSQL</strong></td>
+        <td>PostgreSQL 16</td>
+        <td style="font-family:monospace; color:var(--pink);">:5434</td>
+        <td>Primary database (identity_db, ticket_db)</td>
+      </tr>
+      <tr>
+        <td><strong>Redis</strong></td>
+        <td>Redis 7</td>
+        <td style="font-family:monospace; color:var(--red);">:6379</td>
+        <td>Cache, locks, rate limiting, OTP, Pub/Sub</td>
+      </tr>
+      <tr>
+        <td><strong>Kafka</strong></td>
+        <td>Apache Kafka 7.5</td>
+        <td style="font-family:monospace; color:var(--orange);">:9093</td>
+        <td>Event streaming (outbox pattern)</td>
+      </tr>
+      <tr>
+        <td><strong>Kafka UI</strong></td>
+        <td>provectuslabs/kafka-ui</td>
+        <td style="font-family:monospace; color:var(--text2);">:8080</td>
+        <td>Kafka topic monitoring</td>
+      </tr>
+      <tr>
+        <td><strong>Prometheus</strong></td>
+        <td>Prometheus</td>
+        <td style="font-family:monospace; color:var(--red);">:9090</td>
+        <td>Metrics scraping</td>
+      </tr>
+      <tr>
+        <td><strong>Grafana</strong></td>
+        <td>Grafana</td>
+        <td style="font-family:monospace; color:var(--orange);">:3000</td>
+        <td>Dashboards &amp; visualization</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- PERFORMANCE -->
+<section id="performance">
+  <h2 class="section-title">Performance</h2>
+  <p class="section-sub">Benchmarked with wrk &mdash; 12 threads, 1000 concurrent connections, 30 seconds</p>
+
+  <div class="perf-grid">
+    <div class="perf-card">
+      <div class="perf-val" style="color:var(--green);">73k</div>
+      <div class="perf-unit">requests/sec</div>
+      <div class="perf-label">Direct to Service</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-val" style="color:var(--accent);">25k+</div>
+      <div class="perf-unit">requests/sec</div>
+      <div class="perf-label">Through Gateway</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-val" style="color:var(--purple);">~100ns</div>
+      <div class="perf-unit">L1 cache latency</div>
+      <div class="perf-label">Ristretto In-Process</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-val" style="color:var(--orange);">~1ms</div>
+      <div class="perf-unit">L2 cache latency</div>
+      <div class="perf-label">Redis SWR</div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:2rem; color:var(--text2); font-size:0.85rem;">
+    Tested on Apple Silicon MacBook. Production throughput scales linearly with K8s HPA (2&ndash;10 replicas).
+  </div>
+</section>
+
+<!-- QUICK START -->
+<section id="quickstart">
+  <h2 class="section-title">Quick Start</h2>
+  <p class="section-sub">Get the full stack running locally in minutes</p>
+
+  <div class="code-block">
+<span class="comment"># 1. Clone the repository</span>
+<span class="cmd">git clone</span> https://github.com/gunk2/go-ms.git
+<span class="cmd">cd</span> go-ms
+
+<span class="comment"># 2. Start infrastructure (PostgreSQL, Redis, Kafka, Prometheus, Grafana)</span>
+<span class="cmd">make</span> infra
+
+<span class="comment"># 3. Apply database migrations</span>
+<span class="cmd">make</span> migrate-up
+
+<span class="comment"># 4. Run all services with hot reload</span>
+<span class="cmd">make</span> dev-local
+
+<span class="comment"># 5. Verify</span>
+<span class="cmd">curl</span> http://localhost:8000/health/ready
+  </div>
+
+  <div class="grid grid-3" style="margin-top: 1.5rem;">
+    <div class="card">
+      <h3>Other Commands</h3>
+      <p style="font-family:monospace; font-size:0.8rem; line-height:2;">
+        <span style="color:var(--green);">make generate</span> &mdash; sqlc + proto + swagger<br>
+        <span style="color:var(--green);">make test</span> &mdash; run all tests<br>
+        <span style="color:var(--green);">make lint</span> &mdash; golangci-lint<br>
+        <span style="color:var(--green);">make build</span> &mdash; optimized binaries
+      </p>
+    </div>
+    <div class="card">
+      <h3>Docker (Full Stack)</h3>
+      <p style="font-family:monospace; font-size:0.8rem; line-height:2;">
+        <span style="color:var(--green);">make dev</span> &mdash; all services + infra<br>
+        <span style="color:var(--green);">make dev-down</span> &mdash; stop everything<br>
+        <span style="color:var(--green);">make infra-down</span> &mdash; stop infra only<br>
+        <span style="color:var(--green);">make clean</span> &mdash; remove artifacts
+      </p>
+    </div>
+    <div class="card">
+      <h3>Kubernetes</h3>
+      <p style="font-family:monospace; font-size:0.8rem; line-height:2;">
+        <span style="color:var(--green);">kubectl apply -f</span><br>
+        &nbsp;&nbsp;deployments/k8s/base/<br>
+        <br>
+        HPA: 2&ndash;10 replicas, CPU 70%
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p style="margin-bottom:0.5rem;">
+    <strong style="color:var(--text);">go-ms</strong> &mdash; Production-Ready Go Microservices
+  </p>
+  <p>
+    Built with Go 1.25 &middot; DDD/CQRS &middot; Kafka &middot; PostgreSQL &middot; Redis &middot; Kubernetes
+  </p>
+</footer>
+
+</body>
+</html>
