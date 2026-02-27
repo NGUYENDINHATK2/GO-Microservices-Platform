@@ -3,874 +3,1024 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>go-ms — Production-Ready Go Microservices</title>
+<title>go-ms &mdash; Production-Ready Go Microservices Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d1117;
-    --bg2: #161b22;
-    --bg3: #21262d;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text2: #8b949e;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --orange: #d29922;
-    --purple: #bc8cff;
-    --red: #f85149;
-    --pink: #f778ba;
-    --cyan: #79c0ff;
-  }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050505;--bg1:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+  --border:#ffffff0d;--border2:#ffffff1a;
+  --text:#fafafa;--text2:#a1a1aa;--text3:#71717a;
+  --blue:#3b82f6;--indigo:#6366f1;--violet:#8b5cf6;
+  --emerald:#10b981;--cyan:#06b6d4;--amber:#f59e0b;
+  --rose:#f43f5e;--pink:#ec4899;
+  --glow-blue:0 0 80px rgba(59,130,246,.15);
+  --glow-violet:0 0 80px rgba(139,92,246,.15);
+  --glow-emerald:0 0 80px rgba(16,185,129,.12);
+  --radius:16px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ═══ UTILITIES ═══ */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.mono{font-family:'JetBrains Mono',monospace}
+.fade-in{opacity:0;transform:translateY(30px);transition:opacity .8s,transform .8s}
+.fade-in.visible{opacity:1;transform:none}
 
-  html { scroll-behavior: smooth; }
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:0 24px;transition:background .3s,border .3s}
+nav.scrolled{background:rgba(5,5,5,.8);backdrop-filter:blur(20px) saturate(1.8);border-bottom:1px solid var(--border)}
+nav .inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+nav .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:1.2rem;color:var(--text);letter-spacing:-.02em}
+nav .logo .mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff}
+nav .links{display:flex;align-items:center;gap:32px}
+nav .links a{color:var(--text2);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .2s}
+nav .links a:hover{color:var(--text)}
+nav .gh{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:.8rem;font-weight:600;text-decoration:none;transition:background .2s,border .2s}
+nav .gh:hover{background:var(--bg4);border-color:#ffffff30}
+nav .gh svg{width:16px;height:16px;fill:currentColor}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-  }
+/* ═══ HERO ═══ */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;overflow:hidden}
+.hero-bg{position:absolute;inset:0;overflow:hidden}
+.hero-bg .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.35;animation:float 20s infinite ease-in-out}
+.hero-bg .orb-1{width:600px;height:600px;background:var(--blue);top:-200px;left:-100px;animation-delay:0s}
+.hero-bg .orb-2{width:500px;height:500px;background:var(--violet);top:-100px;right:-150px;animation-delay:-7s}
+.hero-bg .orb-3{width:400px;height:400px;background:var(--emerald);bottom:-150px;left:30%;animation-delay:-14s}
+.hero-bg .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:64px 64px}
+.hero-bg .fade-bottom{position:absolute;bottom:0;left:0;right:0;height:300px;background:linear-gradient(transparent,var(--bg))}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-40px) scale(1.05)}66%{transform:translate(-20px,30px) scale(.95)}}
 
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(13,17,23,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-  }
-  nav .inner {
-    max-width: 1200px; margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 60px;
-  }
-  nav .logo { font-weight: 700; font-size: 1.25rem; color: var(--accent); text-decoration: none; }
-  nav .logo span { color: var(--text2); font-weight: 400; }
-  nav .links { display: flex; gap: 1.5rem; }
-  nav .links a {
-    color: var(--text2); text-decoration: none; font-size: 0.875rem;
-    transition: color 0.2s;
-  }
-  nav .links a:hover { color: var(--text); }
+.hero-content{position:relative;z-index:1;max-width:900px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;border-radius:100px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);font-size:.8rem;font-weight:600;color:var(--indigo);margin-bottom:32px}
+.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-  /* SECTIONS */
-  section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
-  .section-title {
-    font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;
-  }
-  .section-sub {
-    color: var(--text2); margin-bottom: 3rem; font-size: 1.05rem;
-  }
+.hero h1{font-size:clamp(3rem,7vw,5.5rem);font-weight:900;line-height:1.05;letter-spacing:-.04em;margin-bottom:24px}
+.hero h1 .gradient{background:linear-gradient(135deg,#fff 0%,var(--blue) 50%,var(--violet) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .subtitle{font-size:clamp(1.1rem,2vw,1.35rem);color:var(--text2);max-width:640px;margin:0 auto 48px;line-height:1.7;font-weight:400}
 
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-    padding-top: 60px;
-  }
-  .hero-badge {
-    display: inline-block;
-    background: rgba(88,166,255,0.1);
-    border: 1px solid rgba(88,166,255,0.3);
-    color: var(--accent);
-    padding: 0.35rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
-  }
-  .hero h1 {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 1rem;
-  }
-  .hero h1 .gradient {
-    background: linear-gradient(135deg, var(--accent), var(--purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .hero p {
-    color: var(--text2);
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin-bottom: 2.5rem;
-  }
-  .hero-stats {
-    display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center;
-  }
-  .stat { text-align: center; }
-  .stat-val {
-    font-size: 2.5rem; font-weight: 800;
-    background: linear-gradient(135deg, var(--green), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .stat-label { color: var(--text2); font-size: 0.85rem; }
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:.95rem;font-weight:600;text-decoration:none;transition:all .25s;cursor:pointer;border:none}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;box-shadow:0 0 0 1px rgba(99,102,241,.3),var(--glow-blue)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(99,102,241,.5),0 0 120px rgba(59,130,246,.25)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--bg4);border-color:#ffffff30;transform:translateY(-2px)}
 
-  /* ARCHITECTURE */
-  .arch-diagram {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2.5rem;
-    overflow-x: auto;
-    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-    font-size: 0.8rem;
-    line-height: 1.7;
-    color: var(--text2);
-    white-space: pre;
-  }
-  .arch-diagram .hl-blue { color: var(--accent); }
-  .arch-diagram .hl-green { color: var(--green); }
-  .arch-diagram .hl-purple { color: var(--purple); }
-  .arch-diagram .hl-orange { color: var(--orange); }
-  .arch-diagram .hl-pink { color: var(--pink); }
-  .arch-diagram .hl-cyan { color: var(--cyan); }
-  .arch-diagram .hl-red { color: var(--red); }
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .val{font-size:2.5rem;font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,var(--text),var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-stat .label{font-size:.8rem;color:var(--text3);font-weight:500;margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
 
-  /* GRID CARDS */
-  .grid { display: grid; gap: 1.25rem; }
-  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-  .grid-4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+/* ═══ SECTION ═══ */
+section{padding:120px 24px}
+.section-label{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+.section-label .line{width:24px;height:2px;border-radius:1px}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;margin-bottom:16px}
+.section-desc{font-size:1.1rem;color:var(--text2);max-width:600px;line-height:1.7}
 
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .card-icon {
-    width: 40px; height: 40px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem; font-weight: 700;
-    margin-bottom: 1rem;
-  }
-  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-  .card p { color: var(--text2); font-size: 0.9rem; }
+/* ═══ CODE WINDOW ═══ */
+.code-window{background:var(--bg1);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,.5)}
+.code-window .bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.code-window .bar .dots{display:flex;gap:6px}
+.code-window .bar .dot{width:10px;height:10px;border-radius:50%}
+.code-window .bar .dot:nth-child(1){background:#f43f5e}
+.code-window .bar .dot:nth-child(2){background:#f59e0b}
+.code-window .bar .dot:nth-child(3){background:#10b981}
+.code-window .bar .title{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3);margin-left:8px}
+.code-window pre{padding:24px;font-family:'JetBrains Mono',monospace;font-size:.85rem;line-height:1.8;overflow-x:auto;color:var(--text2)}
+.code-window pre .kw{color:var(--violet)}
+.code-window pre .fn{color:var(--blue)}
+.code-window pre .str{color:var(--emerald)}
+.code-window pre .cm{color:var(--text3)}
+.code-window pre .tp{color:var(--cyan)}
+.code-window pre .num{color:var(--amber)}
 
-  /* TECH STACK ICONS */
-  .tech-icon {
-    width: 48px; height: 48px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
+/* ═══ ARCH ═══ */
+.arch-section{background:var(--bg1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.arch-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:64px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.arch-node{background:var(--bg);padding:40px 32px;text-align:center;transition:background .3s}
+.arch-node:hover{background:var(--bg2)}
+.arch-node .icon{width:56px;height:56px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;margin-bottom:16px}
+.arch-node h3{font-size:1rem;font-weight:700;margin-bottom:6px}
+.arch-node p{font-size:.8rem;color:var(--text3);line-height:1.5}
+.arch-node .ports{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3)}
+.arch-span{grid-column:1/-1;background:var(--bg);padding:32px;text-align:center}
+.arch-span .flow{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.arch-span .flow-item{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;background:var(--bg2);border:1px solid var(--border2);font-size:.8rem;font-weight:600}
+.arch-span .flow-arrow{color:var(--text3);font-size:1.2rem}
 
-  /* SERVICE CARDS */
-  .svc-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    transition: border-color 0.2s;
-  }
-  .svc-card:hover { border-color: var(--accent); }
-  .svc-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-  .svc-dot {
-    width: 12px; height: 12px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .svc-card h3 { font-size: 1.25rem; }
-  .svc-port {
-    display: inline-block;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-family: monospace;
-    color: var(--text2);
-    margin-left: 0.5rem;
-  }
-  .svc-card .endpoints {
-    list-style: none; margin-top: 1rem;
-  }
-  .svc-card .endpoints li {
-    padding: 0.4rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.875rem;
-    display: flex; align-items: center; gap: 0.75rem;
-  }
-  .svc-card .endpoints li:last-child { border-bottom: none; }
-  .method {
-    display: inline-block;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    font-family: monospace;
-    min-width: 42px;
-    text-align: center;
-  }
-  .method-get { background: rgba(63,185,80,0.15); color: var(--green); }
-  .method-post { background: rgba(88,166,255,0.15); color: var(--accent); }
-  .method-put { background: rgba(210,153,34,0.15); color: var(--orange); }
-  .method-del { background: rgba(248,81,73,0.15); color: var(--red); }
+/* ═══ FEATURES ═══ */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:64px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.feature{background:var(--bg);padding:48px 36px;position:relative;overflow:hidden;transition:background .3s}
+.feature:hover{background:var(--bg1)}
+.feature::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:0;transition:opacity .3s}
+.feature:hover::before{opacity:1}
+.feature .num{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3);font-weight:700;margin-bottom:20px}
+.feature h3{font-size:1.15rem;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+.feature p{font-size:.875rem;color:var(--text2);line-height:1.7}
 
-  .endpoint-path {
-    font-family: monospace; color: var(--text2); font-size: 0.8rem;
-  }
+/* ═══ STACK ═══ */
+.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:64px}
+.stack-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.stack-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.stack-card .logo{font-size:2rem;margin-bottom:16px;display:block}
+.stack-card h3{font-size:.95rem;font-weight:700;margin-bottom:6px}
+.stack-card p{font-size:.8rem;color:var(--text3);line-height:1.5}
 
-  /* PATTERN CARDS */
-  .pattern-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: border-color 0.2s;
-  }
-  .pattern-card:hover { border-color: var(--purple); }
-  .pattern-num {
-    font-size: 2rem; font-weight: 800;
-    color: var(--bg3);
-    margin-bottom: 0.5rem;
-  }
-  .pattern-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
-  .pattern-card p { color: var(--text2); font-size: 0.85rem; }
+/* ═══ SERVICES ═══ */
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:64px}
+.svc{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .3s}
+.svc:hover{border-color:var(--border2);box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.svc-top{padding:32px 28px 24px;border-bottom:1px solid var(--border)}
+.svc-top .head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.svc-top .indicator{width:10px;height:10px;border-radius:50%}
+.svc-top h3{font-size:1.1rem;font-weight:700}
+.svc-top .port{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text3);padding:3px 8px;border-radius:4px;background:var(--bg3);margin-left:auto}
+.svc-top .desc{font-size:.85rem;color:var(--text2);line-height:1.6}
+.svc-top .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.svc-top .tag{padding:4px 10px;border-radius:6px;font-size:.7rem;font-weight:600}
+.svc-endpoints{padding:20px 28px}
+.svc-endpoints .ep{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:.82rem}
+.svc-endpoints .ep+.ep{border-top:1px solid var(--border)}
+.svc-endpoints .badge{font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:4px;min-width:40px;text-align:center}
+.svc-endpoints .path{font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:.78rem}
 
-  /* LAYER DIAGRAM */
-  .layer-stack {
-    display: flex; flex-direction: column; gap: 0.5rem;
-    max-width: 700px; margin: 2rem auto;
-  }
-  .layer {
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-    position: relative;
-  }
-  .layer-sub { font-weight: 400; font-size: 0.8rem; opacity: 0.7; }
-  .layer-arrow {
-    text-align: center;
-    color: var(--text2);
-    font-size: 1.2rem;
-  }
+/* ═══ LAYERS ═══ */
+.layers-section{position:relative}
+.layers-visual{display:flex;flex-direction:column;gap:3px;max-width:800px;margin:64px auto 0;position:relative}
+.layers-visual::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);z-index:0}
+.lyr{position:relative;z-index:1;padding:24px 32px;border-radius:var(--radius);text-align:center;transition:transform .3s,box-shadow .3s}
+.lyr:hover{transform:scale(1.02)}
+.lyr h3{font-size:1rem;font-weight:700;margin-bottom:4px}
+.lyr p{font-size:.8rem;opacity:.7}
+.lyr-arrow{text-align:center;font-size:1.5rem;color:var(--text3);line-height:1;padding:4px 0;position:relative;z-index:1}
 
-  /* PERF */
-  .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; }
-  .perf-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-  }
-  .perf-val {
-    font-size: 3rem; font-weight: 800;
-    margin-bottom: 0.25rem;
-  }
-  .perf-unit { color: var(--text2); font-size: 0.85rem; }
-  .perf-label { color: var(--text2); font-size: 0.9rem; margin-top: 0.5rem; }
+/* ═══ PERF ═══ */
+.perf-section{background:var(--bg1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.perf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:64px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.perf-cell{background:var(--bg);padding:48px 24px;text-align:center}
+.perf-cell .val{font-size:clamp(2.5rem,5vw,3.5rem);font-weight:900;letter-spacing:-.03em;line-height:1}
+.perf-cell .unit{font-size:.8rem;color:var(--text3);margin-top:8px;font-weight:500}
+.perf-cell .label{font-size:.85rem;color:var(--text2);margin-top:4px;font-weight:600}
 
-  /* QUICKSTART */
-  .code-block {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.5rem;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 0.875rem;
-    overflow-x: auto;
-    line-height: 1.8;
-    margin-bottom: 1rem;
-  }
-  .code-block .comment { color: var(--text2); }
-  .code-block .cmd { color: var(--green); }
-  .code-block .flag { color: var(--orange); }
+/* ═══ QUICKSTART ═══ */
+.qs-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:64px}
+.qs-steps{display:flex;flex-direction:column;gap:32px}
+.qs-step{display:flex;gap:16px}
+.qs-step .num{width:36px;height:36px;border-radius:10px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--text2);flex-shrink:0}
+.qs-step .info h3{font-size:.95rem;font-weight:700;margin-bottom:4px}
+.qs-step .info p{font-size:.85rem;color:var(--text3)}
+.qs-step .info code{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--emerald);background:rgba(16,185,129,.08);padding:2px 8px;border-radius:4px}
 
-  /* TAG */
-  .tag {
-    display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin: 0.15rem;
-  }
-  .tag-blue { background: rgba(88,166,255,0.15); color: var(--accent); }
-  .tag-green { background: rgba(63,185,80,0.15); color: var(--green); }
-  .tag-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
-  .tag-orange { background: rgba(210,153,34,0.15); color: var(--orange); }
+/* ═══ FOOTER ═══ */
+footer{border-top:1px solid var(--border);padding:64px 24px;text-align:center}
+footer .brand{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+footer .brand span{color:var(--text3)}
+footer .tagline{color:var(--text3);font-size:.9rem;margin-bottom:32px}
+footer .techs{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;color:var(--text3);font-size:.8rem;font-weight:500}
+footer .techs span{transition:color .2s}
+footer .techs span:hover{color:var(--text)}
 
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 3rem 2rem;
-    text-align: center;
-    color: var(--text2);
-    font-size: 0.85rem;
-  }
-  footer a { color: var(--accent); text-decoration: none; }
+/* ═══ CURSOR GLOW ═══ */
+.cursor-glow{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(99,102,241,.07) 0%,transparent 70%);transform:translate(-50%,-50%);transition:opacity .3s}
 
-  /* INFRA TABLE */
-  .infra-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1.5rem;
-    font-size: 0.875rem;
-  }
-  .infra-table th {
-    text-align: left;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border);
-    color: var(--text2);
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .infra-table td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .infra-table tr:hover td { background: var(--bg2); }
+/* ═══ PARTICLES CANVAS ═══ */
+#particles{position:absolute;inset:0;z-index:0}
 
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    nav .links { display: none; }
-    section { padding: 3rem 1.25rem; }
-    .hero-stats { gap: 1.5rem; }
-    .stat-val { font-size: 2rem; }
-    .arch-diagram { font-size: 0.65rem; padding: 1.25rem; }
-  }
+/* ═══ ANIMATED GRADIENT BORDER ═══ */
+.glow-border{position:relative}
+.glow-border::after{content:'';position:absolute;inset:-1px;border-radius:inherit;background:conic-gradient(from var(--angle,0deg),transparent 60%,var(--blue) 78%,var(--violet) 82%,transparent 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:1px;opacity:0;transition:opacity .5s;animation:rotate-border 4s linear infinite}
+.glow-border:hover::after{opacity:1}
+@property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes rotate-border{to{--angle:360deg}}
+
+/* ═══ 3D TILT ═══ */
+.tilt-card{transform-style:preserve-3d;transition:transform .2s ease-out}
+
+/* ═══ TYPING CURSOR ═══ */
+.typing-cursor{display:inline-block;width:2px;height:1.1em;background:var(--blue);margin-left:2px;animation:blink-cursor .8s infinite;vertical-align:text-bottom}
+@keyframes blink-cursor{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ═══ CODE LINE HIGHLIGHT ═══ */
+.code-window pre .line{display:block;padding:0 4px;margin:0 -4px;border-radius:4px;transition:background .3s}
+.code-window pre .line:hover{background:rgba(255,255,255,.03)}
+
+/* ═══ COUNTER ANIMATED ═══ */
+.counter{display:inline-block}
+
+/* ═══ SCANLINE ═══ */
+.scanline{position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.008) 2px,rgba(255,255,255,.008) 4px);opacity:.5}
+
+/* ═══ ANIMATED GLOW PULSE ON SECTIONS ═══ */
+.section-glow{position:relative}
+.section-glow::before{content:'';position:absolute;top:50%;left:50%;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.04) 0%,transparent 70%);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;animation:glow-pulse 6s ease-in-out infinite}
+@keyframes glow-pulse{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:.6;transform:translate(-50%,-50%) scale(1.2)}}
+
+/* ═══ FLOATING TECH ICONS ═══ */
+.float-icons{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.float-icon{position:absolute;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.04);font-weight:700;animation:float-up linear infinite}
+@keyframes float-up{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100px) rotate(360deg);opacity:0}}
+
+/* ═══ ANIMATED STAT BAR ═══ */
+.stat-bar{height:2px;background:var(--bg3);border-radius:1px;margin-top:8px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:1px;width:0;transition:width 1.5s cubic-bezier(.22,1,.36,1)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1024px){
+  .features-grid,.arch-grid{grid-template-columns:1fr 1fr}
+  .stack-grid,.perf-grid{grid-template-columns:1fr 1fr}
+  .svc-grid{grid-template-columns:1fr}
+  .qs-layout{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  nav .links{display:none}
+  .hero h1{font-size:2.5rem}
+  .hero-stats{gap:24px}
+  .features-grid,.arch-grid,.stack-grid,.perf-grid{grid-template-columns:1fr}
+  section{padding:80px 20px}
+  .layers-visual{max-width:100%}
+}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav>
+<nav id="nav">
   <div class="inner">
-    <a href="#" class="logo">go-ms <span>microservices</span></a>
+    <a href="#" class="logo">
+      <div class="mark">ms</div>
+      go-ms
+    </a>
     <div class="links">
       <a href="#architecture">Architecture</a>
-      <a href="#stack">Tech Stack</a>
+      <a href="#features">Features</a>
       <a href="#services">Services</a>
-      <a href="#patterns">Patterns</a>
-      <a href="#api">API</a>
-      <a href="#performance">Performance</a>
+      <a href="#stack">Stack</a>
+      <a href="#performance">Benchmark</a>
       <a href="#quickstart">Quick Start</a>
     </div>
+    <a href="https://github.com/gunk2/go-ms" class="gh" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
   </div>
 </nav>
 
 <!-- HERO -->
-<section class="hero" id="hero">
-  <div class="hero-badge">Go 1.25 &middot; DDD/CQRS &middot; Production-Ready</div>
-  <h1>
-    <span class="gradient">go-ms</span><br>
-    Microservices Platform
-  </h1>
-  <p>
-    A production-ready Go microservices system built with Domain-Driven Design,
-    CQRS, event-driven architecture, and cloud-native infrastructure.
-  </p>
-  <div class="hero-stats">
-    <div class="stat">
-      <div class="stat-val">3</div>
-      <div class="stat-label">Microservices</div>
+<section class="hero">
+  <div class="hero-bg">
+    <canvas id="particles"></canvas>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+    <div class="scanline"></div>
+    <div class="fade-bottom"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Production-Ready Microservices
     </div>
-    <div class="stat">
-      <div class="stat-val">125+</div>
-      <div class="stat-label">Go Source Files</div>
+    <h1>Build scalable services<br>with <span class="gradient">go-ms</span></h1>
+    <p class="subtitle">
+      A production-grade Go microservices framework featuring DDD, CQRS,
+      event-driven architecture, and cloud-native infrastructure. Ready to deploy.
+    </p>
+    <p style="font-size:1rem;font-weight:600;margin-bottom:40px;color:var(--text2)">Created by <span style="background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800">Nguyen Dinh At</span></p>
+    <div class="hero-actions">
+      <a href="#quickstart" class="btn btn-primary">Get Started</a>
+      <a href="#architecture" class="btn btn-secondary">Explore Architecture</a>
     </div>
-    <div class="stat">
-      <div class="stat-val">73k</div>
-      <div class="stat-label">Requests/sec</div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val">73k</div><div class="label">req/sec</div></div>
+      <div class="hero-stat"><div class="val">3</div><div class="label">services</div></div>
+      <div class="hero-stat"><div class="val">125+</div><div class="label">go files</div></div>
+      <div class="hero-stat"><div class="val">15+</div><div class="label">endpoints</div></div>
+      <div class="hero-stat"><div class="val">9</div><div class="label">infra services</div></div>
     </div>
-    <div class="stat">
-      <div class="stat-val">15+</div>
-      <div class="stat-label">API Endpoints</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val">9</div>
-      <div class="stat-label">Docker Services</div>
+  </div>
+</section>
+
+<!-- CODE PREVIEW -->
+<section style="padding-top:0;margin-top:-40px">
+  <div class="container">
+    <div class="code-window fade-in" style="max-width:800px;margin:0 auto">
+      <div class="bar">
+        <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <span class="title">internal/domain/ticket/entity.go</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="tp">Ticket</span> <span class="kw">struct</span> {
+    domain.<span class="tp">AggregateRoot</span>
+    id     <span class="tp">TicketID</span>
+    name   <span class="tp">string</span>
+    stock  <span class="tp">Stock</span>
+    price  <span class="tp">Price</span>
+    period <span class="tp">SalePeriod</span>
+}
+
+<span class="kw">func</span> (t *<span class="tp">Ticket</span>) <span class="fn">Reserve</span>(qty <span class="tp">int</span>) <span class="tp">error</span> {
+    <span class="kw">if</span> !t.period.<span class="fn">IsActive</span>() {
+        <span class="kw">return</span> <span class="tp">ErrSaleNotActive</span>
+    }
+    <span class="kw">if</span> err := t.stock.<span class="fn">Decrease</span>(qty); err != <span class="kw">nil</span> {
+        <span class="kw">return</span> err
+    }
+    t.<span class="fn">AddEvent</span>(<span class="fn">NewTicketReservedEvent</span>(t.id, qty))
+    <span class="kw">if</span> t.stock.<span class="fn">IsZero</span>() {
+        t.<span class="fn">AddEvent</span>(<span class="fn">NewTicketSoldOutEvent</span>(t.id))
+    }
+    <span class="kw">return</span> <span class="kw">nil</span>
+}</pre>
     </div>
   </div>
 </section>
 
 <!-- ARCHITECTURE -->
-<section id="architecture">
-  <h2 class="section-title">System Architecture</h2>
-  <p class="section-sub">Multi-module monorepo with 4 Go modules connected via go.work</p>
+<section class="arch-section" id="architecture">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-label"><span class="line" style="background:var(--blue)"></span> <span style="color:var(--blue)">Architecture</span></div>
+      <h2 class="section-title">System overview</h2>
+      <p class="section-desc">Multi-module Go monorepo with strict bounded contexts, API gateway, and event-driven communication.</p>
+    </div>
 
-  <div class="arch-diagram"><span class="hl-blue">                              Clients (Web / Mobile / API)</span>
-                                        |
-                                        v
-                          <span class="hl-cyan">+---------------------------+</span>
-                          <span class="hl-cyan">|      API Gateway :8000    |</span>
-                          <span class="hl-cyan">|  Reverse Proxy + Auth     |</span>
-                          <span class="hl-cyan">|  Circuit Breaker          |</span>
-                          <span class="hl-cyan">|  Rate Limiting + CORS     |</span>
-                          <span class="hl-cyan">|  Prometheus Metrics       |</span>
-                          <span class="hl-cyan">+---------------------------+</span>
-                            /           |             \
-                    <span class="hl-green">HTTP</span>             <span class="hl-purple">gRPC</span>             <span class="hl-green">HTTP</span>
-                     /              (auth)              \
-                    v                 |                   v
-    <span class="hl-green">+---------------------+</span>        |         <span class="hl-orange">+---------------------+</span>
-    <span class="hl-green">|  Identity Service   |</span>&lt;-------+         <span class="hl-orange">|   Ticket Service    |</span>
-    <span class="hl-green">|  :8001  :50051      |</span>                  <span class="hl-orange">|  :8002  :50052      |</span>
-    <span class="hl-green">|                     |</span>                  <span class="hl-orange">|                     |</span>
-    <span class="hl-green">| - Registration/OTP  |</span>                  <span class="hl-orange">| - CRUD + Caching    |</span>
-    <span class="hl-green">| - JWT Auth          |</span>                  <span class="hl-orange">| - Reserve/Release   |</span>
-    <span class="hl-green">| - User Profiles     |</span>                  <span class="hl-orange">| - 3-Layer Cache     |</span>
-    <span class="hl-green">+---------------------+</span>                  <span class="hl-orange">+---------------------+</span>
-           |         |                           |         |
-           v         v                           v         v
-    <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>          <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>
-    <span class="hl-pink">| identity  |</span> <span class="hl-red">|   Redis   |</span>          <span class="hl-pink">| ticket    |</span> <span class="hl-red">|   Redis   |</span>
-    <span class="hl-pink">|   _db     |</span> <span class="hl-red">|   :6379   |</span>          <span class="hl-pink">|   _db     |</span> <span class="hl-red">|   :6379   |</span>
-    <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>          <span class="hl-pink">+-----------+</span> <span class="hl-red">+-----------+</span>
-         <span class="hl-pink">PostgreSQL :5434</span>                     <span class="hl-pink">PostgreSQL :5434</span>
-                          \                 /
-                           v               v
-                    <span class="hl-orange">+-------------------------+</span>
-                    <span class="hl-orange">|    Kafka  :9093         |</span>
-                    <span class="hl-orange">|  Transactional Outbox   |</span>
-                    <span class="hl-orange">|  identity-events topic  |</span>
-                    <span class="hl-orange">|  ticket-events topic    |</span>
-                    <span class="hl-orange">+-------------------------+</span></div>
+    <div class="arch-grid fade-in">
+      <!-- Row 1: Gateway -->
+      <div class="arch-span">
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">
+          <div class="icon" style="background:linear-gradient(135deg,var(--cyan),var(--blue));width:44px;height:44px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;color:#fff;">GW</div>
+          <div style="text-align:left">
+            <h3 style="font-size:1.1rem;font-weight:700">API Gateway</h3>
+            <p style="font-size:.8rem;color:var(--text3)">Reverse proxy &middot; Circuit breaker &middot; Rate limiting &middot; JWT auth &middot; Prometheus</p>
+          </div>
+          <div class="ports" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--cyan)">:8000</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Services -->
+      <div class="arch-node">
+        <div class="icon" style="background:linear-gradient(135deg,var(--emerald),#059669);color:#fff">ID</div>
+        <h3>Identity Service</h3>
+        <p>Registration, OTP, JWT auth,<br>user profiles, gRPC server</p>
+        <div class="ports" style="color:var(--emerald)">:8001 &middot; :50051</div>
+      </div>
+      <div class="arch-node">
+        <div class="icon" style="background:linear-gradient(135deg,var(--amber),#d97706);color:#fff">TK</div>
+        <h3>Ticket Service</h3>
+        <p>CRUD, reserve/release,<br>3-layer cache, gRPC server</p>
+        <div class="ports" style="color:var(--amber)">:8002 &middot; :50052</div>
+      </div>
+      <div class="arch-node">
+        <div class="icon" style="background:linear-gradient(135deg,var(--violet),#7c3aed);color:#fff">SH</div>
+        <h3>Shared Module</h3>
+        <p>Domain kernel, outbox,<br>resilience, logging, metrics</p>
+        <div class="ports" style="color:var(--violet)">library</div>
+      </div>
+
+      <!-- Row 3: Infrastructure -->
+      <div class="arch-span">
+        <div class="flow">
+          <div class="flow-item" style="color:var(--blue)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 7h20"/></svg>
+            PostgreSQL
+          </div>
+          <span class="flow-arrow">&rarr;</span>
+          <div class="flow-item" style="color:var(--rose)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Redis
+          </div>
+          <span class="flow-arrow">&rarr;</span>
+          <div class="flow-item" style="color:var(--amber)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            Kafka
+          </div>
+          <span class="flow-arrow">&rarr;</span>
+          <div class="flow-item" style="color:var(--pink)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Prometheus
+          </div>
+          <span class="flow-arrow">&rarr;</span>
+          <div class="flow-item" style="color:var(--emerald)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            Grafana
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- DDD LAYERS -->
-<section id="ddd">
-  <h2 class="section-title">DDD Layer Architecture</h2>
-  <p class="section-sub">Strict dependency rule: outer layers depend inward, domain has zero external dependencies</p>
+<section class="layers-section" id="layers">
+  <div class="container">
+    <div class="fade-in" style="text-align:center">
+      <div class="section-label" style="justify-content:center"><span class="line" style="background:var(--violet)"></span> <span style="color:var(--violet)">DDD Architecture</span></div>
+      <h2 class="section-title">Clean layer separation</h2>
+      <p class="section-desc" style="margin:0 auto">Strict dependency rule &mdash; outer layers depend inward. Domain has zero external dependencies.</p>
+    </div>
 
-  <div class="layer-stack">
-    <div class="layer" style="background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); color:var(--accent);">
-      Interfaces (HTTP Controllers, gRPC Handlers, Middleware)
-      <div class="layer-sub">Gin routes, request validation, response formatting</div>
+    <div class="layers-visual fade-in">
+      <div class="lyr" style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);color:var(--blue)">
+        <h3>Interfaces</h3>
+        <p>HTTP Controllers &middot; gRPC Handlers &middot; Middleware &middot; Router</p>
+      </div>
+      <div class="lyr-arrow">&darr;</div>
+      <div class="lyr" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);color:var(--emerald)">
+        <h3>Application</h3>
+        <p>CQRS Commands &amp; Queries &middot; DTOs &middot; Business Orchestration</p>
+      </div>
+      <div class="lyr-arrow">&darr;</div>
+      <div class="lyr" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);color:var(--violet);box-shadow:var(--glow-violet)">
+        <h3>Domain (Pure Business Logic)</h3>
+        <p>Entities &middot; Value Objects &middot; Aggregate Roots &middot; Domain Events &middot; Repository Interfaces</p>
+      </div>
+      <div class="lyr-arrow">&uarr;</div>
+      <div class="lyr" style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);color:var(--amber)">
+        <h3>Infrastructure</h3>
+        <p>PostgreSQL Repos &middot; Redis Cache &middot; Kafka Publisher &middot; gRPC Client &middot; Security</p>
+      </div>
     </div>
-    <div class="layer-arrow">&darr;</div>
-    <div class="layer" style="background:rgba(63,185,80,0.12); border:1px solid rgba(63,185,80,0.3); color:var(--green);">
-      Application (CQRS Commands &amp; Queries, DTOs)
-      <div class="layer-sub">Business orchestration, command/query separation</div>
-    </div>
-    <div class="layer-arrow">&darr;</div>
-    <div class="layer" style="background:rgba(188,140,255,0.12); border:1px solid rgba(188,140,255,0.3); color:var(--purple);">
-      Domain (Entities, Value Objects, Aggregate Roots, Events, Repository Interfaces)
-      <div class="layer-sub">Pure business logic &mdash; ZERO external dependencies</div>
-    </div>
-    <div class="layer-arrow">&uarr;</div>
-    <div class="layer" style="background:rgba(210,153,34,0.12); border:1px solid rgba(210,153,34,0.3); color:var(--orange);">
-      Infrastructure (PostgreSQL Repos, Redis Cache, Kafka, gRPC Client, Security)
-      <div class="layer-sub">Implements domain interfaces, talks to external systems</div>
-    </div>
-  </div>
-
-  <div style="text-align:center; margin-top:2rem;">
-    <div class="code-block" style="display:inline-block; text-align:left; max-width:600px;">
-<span class="comment"># Per-service directory structure</span>
-<span class="cmd">internal/</span>
-  <span class="cmd">domain/{aggregate}/</span>      <span class="comment"># entity, value_objects, repository, events, errors</span>
-  <span class="cmd">application/</span>
-    <span class="cmd">command/{aggregate}/</span>   <span class="comment"># write operations (CQRS)</span>
-    <span class="cmd">query/{aggregate}/</span>     <span class="comment"># read operations (CQRS)</span>
-  <span class="cmd">infrastructure/</span>
-    <span class="cmd">persistence/postgres/</span>  <span class="comment"># repository implementations</span>
-    <span class="cmd">persistence/redis/</span>     <span class="comment"># cache implementations</span>
-    <span class="cmd">cache/</span>                 <span class="comment"># multi-layer cache coordinator</span>
-  <span class="cmd">interfaces/http/</span>
-    <span class="cmd">controller/</span>            <span class="comment"># Gin handlers</span>
-    <span class="cmd">middleware/</span>            <span class="comment"># auth, rate limiting</span>
-    <span class="cmd">router/</span>                <span class="comment"># route registration</span></div>
   </div>
 </section>
 
-<!-- TECH STACK -->
-<section id="stack">
-  <h2 class="section-title">Tech Stack</h2>
-  <p class="section-sub">Modern, battle-tested technologies for every layer</p>
+<!-- FEATURES / PATTERNS -->
+<section id="features">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-label"><span class="line" style="background:var(--emerald)"></span> <span style="color:var(--emerald)">Features</span></div>
+      <h2 class="section-title">Production-grade patterns</h2>
+      <p class="section-desc">Built with battle-tested patterns for resilience, performance, and data consistency.</p>
+    </div>
 
-  <div class="grid grid-4">
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(0,173,216,0.15); color:#00ADD8;">Go</div>
-      <h3>Go 1.25</h3>
-      <p>Core language. Multi-module monorepo with go.work workspace.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(88,166,255,0.15); color:var(--accent);">Gin</div>
-      <h3>Gin Framework</h3>
-      <p>High-performance HTTP framework with middleware support.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(188,140,255,0.15); color:var(--purple);">gRPC</div>
-      <h3>gRPC + Protobuf</h3>
-      <p>Inter-service communication. Token validation via gRPC.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(51,103,145,0.2); color:#336791;">PG</div>
-      <h3>PostgreSQL 16</h3>
-      <p>Primary datastore. Goose migrations + sqlc type-safe queries.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(220,59,47,0.15); color:#DC3B2F;">R</div>
-      <h3>Redis 7</h3>
-      <p>Cache (L2), rate limiting, distributed locks, OTP storage, Pub/Sub.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(210,153,34,0.15); color:var(--orange);">K</div>
-      <h3>Apache Kafka</h3>
-      <p>Event streaming via Transactional Outbox pattern. Snappy compression.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(63,185,80,0.15); color:var(--green);">D</div>
-      <h3>Docker + K8s</h3>
-      <p>Multi-stage builds (scratch). K8s manifests with HPA auto-scaling.</p>
-    </div>
-    <div class="card">
-      <div class="tech-icon" style="background:rgba(248,81,73,0.15); color:var(--red);">P</div>
-      <h3>Prometheus + Grafana</h3>
-      <p>HTTP/gRPC metrics, custom dashboards, service monitoring.</p>
+    <div class="features-grid fade-in">
+      <div class="feature">
+        <div class="num mono">01</div>
+        <h3>Domain-Driven Design</h3>
+        <p>Entities, Value Objects, Aggregate Roots with domain events. Domain layer has zero external dependencies. Repository interfaces in domain, implementations in infrastructure.</p>
+      </div>
+      <div class="feature">
+        <div class="num mono">02</div>
+        <h3>CQRS</h3>
+        <p>Command/Query Responsibility Segregation. Write operations separated from reads in the application layer. Clear intent, independent scalability.</p>
+      </div>
+      <div class="feature">
+        <div class="num mono">03</div>
+        <h3>Transactional Outbox</h3>
+        <p>Domain events saved atomically with aggregates, reliably published to Kafka. Exponential backoff, auto-cleanup, graceful drain on shutdown.</p>
+      </div>
+      <div class="feature">
+        <div class="num mono">04</div>
+        <h3>Circuit Breaker</h3>
+        <p>Gateway protects backends with gobreaker. Configurable thresholds, half-open probing. Transport errors excluded from failure counting.</p>
+      </div>
+      <div class="feature">
+        <div class="num mono">05</div>
+        <h3>3-Layer Cache</h3>
+        <p>L1 Ristretto (~100ns) &rarr; L2 Redis SWR (~1ms) &rarr; L3 PostgreSQL. Singleflight dedup, distributed locks, stampede prevention.</p>
+      </div>
+      <div class="feature">
+        <div class="num mono">06</div>
+        <h3>Rate Limiting</h3>
+        <p>Redis-backed rate limiting with 3 tiers: global, per-IP, per-user. Configurable limits per endpoint. Trusted IPs bypass.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- SERVICES -->
-<section id="services">
-  <h2 class="section-title">Microservices</h2>
-  <p class="section-sub">Three services with clear bounded contexts and independent databases</p>
-
-  <div class="grid grid-3">
-    <!-- Identity -->
-    <div class="svc-card">
-      <div class="svc-header">
-        <div class="svc-dot" style="background:var(--green);"></div>
-        <h3>Identity Service</h3>
-        <span class="svc-port">:8001</span>
-        <span class="svc-port">:50051 gRPC</span>
-      </div>
-      <p style="color:var(--text2); font-size:0.9rem; margin-bottom:0.75rem;">
-        User authentication, registration with OTP verification, JWT token management, and profile CRUD.
-      </p>
-      <div style="margin-bottom:0.75rem;">
-        <span class="tag tag-green">JWT Dual Token</span>
-        <span class="tag tag-blue">OTP Verification</span>
-        <span class="tag tag-purple">bcrypt</span>
-        <span class="tag tag-orange">gRPC Server</span>
-      </div>
-      <ul class="endpoints">
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/register</span></li>
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/verify-otp</span></li>
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/login</span></li>
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/set-password</span></li>
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/auth/logout</span></li>
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/user/profile</span></li>
-        <li><span class="method method-put">PUT</span> <span class="endpoint-path">/api/v1/user/profile</span></li>
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/users/:id</span></li>
-      </ul>
+<section id="services" style="background:var(--bg1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-label"><span class="line" style="background:var(--amber)"></span> <span style="color:var(--amber)">Services</span></div>
+      <h2 class="section-title">Three bounded contexts</h2>
+      <p class="section-desc">Independent services with their own databases, schemas, and deployment units.</p>
     </div>
 
-    <!-- Ticket -->
-    <div class="svc-card">
-      <div class="svc-header">
-        <div class="svc-dot" style="background:var(--orange);"></div>
-        <h3>Ticket Service</h3>
-        <span class="svc-port">:8002</span>
-        <span class="svc-port">:50052 gRPC</span>
+    <div class="svc-grid fade-in">
+      <!-- Identity -->
+      <div class="svc">
+        <div class="svc-top">
+          <div class="head">
+            <div class="indicator" style="background:var(--emerald)"></div>
+            <h3>Identity Service</h3>
+            <span class="port">:8001</span>
+          </div>
+          <p class="desc">User authentication, registration with OTP verification, JWT dual-token management, and profile CRUD.</p>
+          <div class="tags">
+            <span class="tag" style="background:rgba(16,185,129,.1);color:var(--emerald)">JWT</span>
+            <span class="tag" style="background:rgba(59,130,246,.1);color:var(--blue)">OTP</span>
+            <span class="tag" style="background:rgba(139,92,246,.1);color:var(--violet)">gRPC</span>
+            <span class="tag" style="background:rgba(245,158,11,.1);color:var(--amber)">bcrypt</span>
+          </div>
+        </div>
+        <div class="svc-endpoints">
+          <div class="ep"><span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue)">POST</span><span class="path">/api/v1/auth/register</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue)">POST</span><span class="path">/api/v1/auth/verify-otp</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue)">POST</span><span class="path">/api/v1/auth/login</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue)">POST</span><span class="path">/api/v1/auth/logout</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald)">GET</span><span class="path">/api/v1/user/profile</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(245,158,11,.1);color:var(--amber)">PUT</span><span class="path">/api/v1/user/profile</span></div>
+        </div>
       </div>
-      <p style="color:var(--text2); font-size:0.9rem; margin-bottom:0.75rem;">
-        Ticket management with stock reservation, 3-layer cache, singleflight dedup, and distributed locking.
-      </p>
-      <div style="margin-bottom:0.75rem;">
-        <span class="tag tag-green">3-Layer Cache</span>
-        <span class="tag tag-blue">Singleflight</span>
-        <span class="tag tag-purple">Distributed Lock</span>
-        <span class="tag tag-orange">SWR</span>
-      </div>
-      <ul class="endpoints">
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/tickets/:id</span></li>
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/api/v1/tickets/:id/detail</span></li>
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/tickets/reserve</span></li>
-        <li><span class="method method-post">POST</span> <span class="endpoint-path">/api/v1/tickets/release</span></li>
-      </ul>
-    </div>
 
-    <!-- Gateway -->
-    <div class="svc-card">
-      <div class="svc-header">
-        <div class="svc-dot" style="background:var(--accent);"></div>
-        <h3>API Gateway</h3>
-        <span class="svc-port">:8000</span>
+      <!-- Ticket -->
+      <div class="svc">
+        <div class="svc-top">
+          <div class="head">
+            <div class="indicator" style="background:var(--amber)"></div>
+            <h3>Ticket Service</h3>
+            <span class="port">:8002</span>
+          </div>
+          <p class="desc">Ticket management with stock reservation, 3-layer cache, singleflight dedup, and distributed locking.</p>
+          <div class="tags">
+            <span class="tag" style="background:rgba(16,185,129,.1);color:var(--emerald)">Cache</span>
+            <span class="tag" style="background:rgba(59,130,246,.1);color:var(--blue)">Singleflight</span>
+            <span class="tag" style="background:rgba(139,92,246,.1);color:var(--violet)">Lock</span>
+            <span class="tag" style="background:rgba(245,158,11,.1);color:var(--amber)">SWR</span>
+          </div>
+        </div>
+        <div class="svc-endpoints">
+          <div class="ep"><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald)">GET</span><span class="path">/api/v1/tickets/:id</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald)">GET</span><span class="path">/api/v1/tickets/:id/detail</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue)">POST</span><span class="path">/api/v1/tickets/reserve</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue)">POST</span><span class="path">/api/v1/tickets/release</span></div>
+        </div>
       </div>
-      <p style="color:var(--text2); font-size:0.9rem; margin-bottom:0.75rem;">
-        Reverse proxy with config-driven routing, circuit breaker, JWT validation via gRPC, and rate limiting.
-      </p>
-      <div style="margin-bottom:0.75rem;">
-        <span class="tag tag-green">Circuit Breaker</span>
-        <span class="tag tag-blue">Rate Limiting</span>
-        <span class="tag tag-purple">Reverse Proxy</span>
-        <span class="tag tag-orange">CORS</span>
+
+      <!-- Gateway -->
+      <div class="svc">
+        <div class="svc-top">
+          <div class="head">
+            <div class="indicator" style="background:var(--cyan)"></div>
+            <h3>API Gateway</h3>
+            <span class="port">:8000</span>
+          </div>
+          <p class="desc">Reverse proxy with config-driven routing, circuit breaker, JWT validation via gRPC, and rate limiting.</p>
+          <div class="tags">
+            <span class="tag" style="background:rgba(6,182,212,.1);color:var(--cyan)">Proxy</span>
+            <span class="tag" style="background:rgba(244,63,94,.1);color:var(--rose)">CB</span>
+            <span class="tag" style="background:rgba(139,92,246,.1);color:var(--violet)">Rate Limit</span>
+            <span class="tag" style="background:rgba(245,158,11,.1);color:var(--amber)">CORS</span>
+          </div>
+        </div>
+        <div class="svc-endpoints">
+          <div class="ep"><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald)">GET</span><span class="path">/health/live</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald)">GET</span><span class="path">/health/ready</span></div>
+          <div class="ep"><span class="badge" style="background:rgba(16,185,129,.1);color:var(--emerald)">GET</span><span class="path">/metrics</span></div>
+          <div class="ep" style="border:none"><span style="color:var(--text3);font-size:.78rem">Proxies all /api/v1/* to backends</span></div>
+        </div>
       </div>
-      <ul class="endpoints">
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/health/live</span></li>
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/health/ready</span></li>
-        <li><span class="method method-get">GET</span> <span class="endpoint-path">/metrics</span></li>
-        <li style="color:var(--text2); font-size:0.8rem; border:none; padding-top:0.5rem;">
-          Routes all /api/v1/* to backend services
-        </li>
-      </ul>
     </div>
   </div>
 </section>
 
-<!-- PATTERNS -->
-<section id="patterns">
-  <h2 class="section-title">Key Patterns</h2>
-  <p class="section-sub">Production-grade patterns for resilience, performance, and data consistency</p>
+<!-- TECH STACK -->
+<section id="stack">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-label"><span class="line" style="background:var(--cyan)"></span> <span style="color:var(--cyan)">Tech Stack</span></div>
+      <h2 class="section-title">Modern, battle-tested</h2>
+      <p class="section-desc">Every layer powered by proven technologies.</p>
+    </div>
 
-  <div class="grid grid-3">
-    <div class="pattern-card">
-      <div class="pattern-num">01</div>
-      <h3>Domain-Driven Design</h3>
-      <p>Entities, Value Objects, Aggregate Roots with domain events. Domain layer has zero external dependencies. Repository interfaces defined in domain, implemented in infrastructure.</p>
-    </div>
-    <div class="pattern-card">
-      <div class="pattern-num">02</div>
-      <h3>CQRS</h3>
-      <p>Command/Query Responsibility Segregation. Write operations (commands) separated from read operations (queries) in the application layer for clear intent and scalability.</p>
-    </div>
-    <div class="pattern-card">
-      <div class="pattern-num">03</div>
-      <h3>Transactional Outbox</h3>
-      <p>Domain events saved atomically with aggregates, then reliably published to Kafka. Exponential backoff retries, auto-cleanup, graceful drain on shutdown.</p>
-    </div>
-    <div class="pattern-card">
-      <div class="pattern-num">04</div>
-      <h3>Circuit Breaker</h3>
-      <p>Gateway protects backends with sony/gobreaker. Configurable thresholds, half-open probing. Transport errors excluded from failure counting to prevent false trips.</p>
-    </div>
-    <div class="pattern-card">
-      <div class="pattern-num">05</div>
-      <h3>3-Layer Cache</h3>
-      <p>L1: Ristretto in-process (~100ns) &rarr; L2: Redis with SWR (~1ms) &rarr; L3: PostgreSQL. Singleflight dedup, distributed locks, negative caching, stampede prevention.</p>
-    </div>
-    <div class="pattern-card">
-      <div class="pattern-num">06</div>
-      <h3>Rate Limiting</h3>
-      <p>Redis-backed rate limiting with 3 tiers (global, per-IP, per-user). Configurable limits per endpoint. Trusted IPs bypass.</p>
+    <div class="stack-grid fade-in">
+      <div class="stack-card">
+        <span class="logo" style="color:var(--cyan)">Go</span>
+        <h3>Go 1.25</h3>
+        <p>Multi-module monorepo with go.work</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--blue)">Gin</span>
+        <h3>Gin Framework</h3>
+        <p>High-perf HTTP with middleware</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--violet)">gRPC</span>
+        <h3>gRPC + Protobuf</h3>
+        <p>Inter-service communication</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--blue)">PG</span>
+        <h3>PostgreSQL 16</h3>
+        <p>Goose migrations + sqlc codegen</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--rose)">Redis</span>
+        <h3>Redis 7</h3>
+        <p>Cache, locks, rate limit, Pub/Sub</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--amber)">Kafka</span>
+        <h3>Apache Kafka</h3>
+        <p>Event streaming + outbox pattern</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--emerald)">K8s</span>
+        <h3>Docker + K8s</h3>
+        <p>Scratch images, HPA auto-scale</p>
+      </div>
+      <div class="stack-card">
+        <span class="logo" style="color:var(--pink)">Pro</span>
+        <h3>Prometheus</h3>
+        <p>Metrics + Grafana dashboards</p>
+      </div>
     </div>
   </div>
-</section>
-
-<!-- API -->
-<section id="api">
-  <h2 class="section-title">API Response Format</h2>
-  <p class="section-sub">Consistent JSON response structure across all endpoints</p>
-
-  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-    <div class="code-block">
-<span class="comment">// Success Response</span>
-{
-  <span class="cmd">"code"</span>: 20001,
-  <span class="cmd">"message"</span>: "Success",
-  <span class="cmd">"data"</span>: {
-    "id": "usr_abc123",
-    "email": "user@example.com",
-    "nickname": "gopher"
-  }
-}
-    </div>
-    <div class="code-block">
-<span class="comment">// Error Response</span>
-{
-  <span class="cmd">"code"</span>: <span class="flag">40004</span>,
-  <span class="cmd">"message"</span>: "Resource not found",
-  <span class="cmd">"data"</span>: null
-}
-
-<span class="comment">// Business Error Codes:</span>
-<span class="comment">// 20001  Success</span>
-<span class="comment">// 20003  Bad Request</span>
-<span class="comment">// 30001  Unauthorized</span>
-<span class="comment">// 40004  Not Found</span>
-<span class="comment">// 50001  Conflict</span>
-<span class="comment">// 90001  Server Error</span>
-    </div>
-  </div>
-</section>
-
-<!-- INFRASTRUCTURE -->
-<section id="infra">
-  <h2 class="section-title">Infrastructure Stack</h2>
-  <p class="section-sub">Docker Compose for local dev, Kubernetes for production</p>
-
-  <table class="infra-table">
-    <thead>
-      <tr>
-        <th>Service</th>
-        <th>Technology</th>
-        <th>Port</th>
-        <th>Purpose</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>API Gateway</strong></td>
-        <td>Go / Gin</td>
-        <td style="font-family:monospace; color:var(--cyan);">:8000</td>
-        <td>Reverse proxy, auth, rate limiting</td>
-      </tr>
-      <tr>
-        <td><strong>Identity Service</strong></td>
-        <td>Go / Gin + gRPC</td>
-        <td style="font-family:monospace; color:var(--green);">:8001 :50051</td>
-        <td>Auth, users, JWT</td>
-      </tr>
-      <tr>
-        <td><strong>Ticket Service</strong></td>
-        <td>Go / Gin + gRPC</td>
-        <td style="font-family:monospace; color:var(--orange);">:8002 :50052</td>
-        <td>Tickets, caching, reservations</td>
-      </tr>
-      <tr>
-        <td><strong>PostgreSQL</strong></td>
-        <td>PostgreSQL 16</td>
-        <td style="font-family:monospace; color:var(--pink);">:5434</td>
-        <td>Primary database (identity_db, ticket_db)</td>
-      </tr>
-      <tr>
-        <td><strong>Redis</strong></td>
-        <td>Redis 7</td>
-        <td style="font-family:monospace; color:var(--red);">:6379</td>
-        <td>Cache, locks, rate limiting, OTP, Pub/Sub</td>
-      </tr>
-      <tr>
-        <td><strong>Kafka</strong></td>
-        <td>Apache Kafka 7.5</td>
-        <td style="font-family:monospace; color:var(--orange);">:9093</td>
-        <td>Event streaming (outbox pattern)</td>
-      </tr>
-      <tr>
-        <td><strong>Kafka UI</strong></td>
-        <td>provectuslabs/kafka-ui</td>
-        <td style="font-family:monospace; color:var(--text2);">:8080</td>
-        <td>Kafka topic monitoring</td>
-      </tr>
-      <tr>
-        <td><strong>Prometheus</strong></td>
-        <td>Prometheus</td>
-        <td style="font-family:monospace; color:var(--red);">:9090</td>
-        <td>Metrics scraping</td>
-      </tr>
-      <tr>
-        <td><strong>Grafana</strong></td>
-        <td>Grafana</td>
-        <td style="font-family:monospace; color:var(--orange);">:3000</td>
-        <td>Dashboards &amp; visualization</td>
-      </tr>
-    </tbody>
-  </table>
 </section>
 
 <!-- PERFORMANCE -->
-<section id="performance">
-  <h2 class="section-title">Performance</h2>
-  <p class="section-sub">Benchmarked with wrk &mdash; 12 threads, 1000 concurrent connections, 30 seconds</p>
+<section class="perf-section" id="performance">
+  <div class="container">
+    <div class="fade-in" style="text-align:center">
+      <div class="section-label" style="justify-content:center"><span class="line" style="background:var(--rose)"></span> <span style="color:var(--rose)">Performance</span></div>
+      <h2 class="section-title">Benchmark results</h2>
+      <p class="section-desc" style="margin:0 auto">wrk &mdash; 12 threads, 1000 concurrent connections, 30 seconds on Apple Silicon.</p>
+    </div>
 
-  <div class="perf-grid">
-    <div class="perf-card">
-      <div class="perf-val" style="color:var(--green);">73k</div>
-      <div class="perf-unit">requests/sec</div>
-      <div class="perf-label">Direct to Service</div>
+    <div class="perf-grid fade-in">
+      <div class="perf-cell">
+        <div class="val" style="color:var(--emerald)">73k</div>
+        <div class="unit">requests/sec</div>
+        <div class="label">Direct to Service</div>
+      </div>
+      <div class="perf-cell">
+        <div class="val" style="color:var(--blue)">25k+</div>
+        <div class="unit">requests/sec</div>
+        <div class="label">Through Gateway</div>
+      </div>
+      <div class="perf-cell">
+        <div class="val" style="color:var(--violet)">~100ns</div>
+        <div class="unit">latency</div>
+        <div class="label">L1 Cache (Ristretto)</div>
+      </div>
+      <div class="perf-cell">
+        <div class="val" style="color:var(--amber)">~1ms</div>
+        <div class="unit">latency</div>
+        <div class="label">L2 Cache (Redis)</div>
+      </div>
     </div>
-    <div class="perf-card">
-      <div class="perf-val" style="color:var(--accent);">25k+</div>
-      <div class="perf-unit">requests/sec</div>
-      <div class="perf-label">Through Gateway</div>
-    </div>
-    <div class="perf-card">
-      <div class="perf-val" style="color:var(--purple);">~100ns</div>
-      <div class="perf-unit">L1 cache latency</div>
-      <div class="perf-label">Ristretto In-Process</div>
-    </div>
-    <div class="perf-card">
-      <div class="perf-val" style="color:var(--orange);">~1ms</div>
-      <div class="perf-unit">L2 cache latency</div>
-      <div class="perf-label">Redis SWR</div>
-    </div>
-  </div>
 
-  <div style="text-align:center; margin-top:2rem; color:var(--text2); font-size:0.85rem;">
-    Tested on Apple Silicon MacBook. Production throughput scales linearly with K8s HPA (2&ndash;10 replicas).
+    <p style="text-align:center;margin-top:24px;color:var(--text3);font-size:.85rem">
+      Scales linearly with Kubernetes HPA &mdash; 2 to 10 replicas per service.
+    </p>
   </div>
 </section>
 
-<!-- QUICK START -->
+<!-- QUICKSTART -->
 <section id="quickstart">
-  <h2 class="section-title">Quick Start</h2>
-  <p class="section-sub">Get the full stack running locally in minutes</p>
-
-  <div class="code-block">
-<span class="comment"># 1. Clone the repository</span>
-<span class="cmd">git clone</span> https://github.com/gunk2/go-ms.git
-<span class="cmd">cd</span> go-ms
-
-<span class="comment"># 2. Start infrastructure (PostgreSQL, Redis, Kafka, Prometheus, Grafana)</span>
-<span class="cmd">make</span> infra
-
-<span class="comment"># 3. Apply database migrations</span>
-<span class="cmd">make</span> migrate-up
-
-<span class="comment"># 4. Run all services with hot reload</span>
-<span class="cmd">make</span> dev-local
-
-<span class="comment"># 5. Verify</span>
-<span class="cmd">curl</span> http://localhost:8000/health/ready
-  </div>
-
-  <div class="grid grid-3" style="margin-top: 1.5rem;">
-    <div class="card">
-      <h3>Other Commands</h3>
-      <p style="font-family:monospace; font-size:0.8rem; line-height:2;">
-        <span style="color:var(--green);">make generate</span> &mdash; sqlc + proto + swagger<br>
-        <span style="color:var(--green);">make test</span> &mdash; run all tests<br>
-        <span style="color:var(--green);">make lint</span> &mdash; golangci-lint<br>
-        <span style="color:var(--green);">make build</span> &mdash; optimized binaries
-      </p>
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-label"><span class="line" style="background:var(--indigo)"></span> <span style="color:var(--indigo)">Quick Start</span></div>
+      <h2 class="section-title">Up and running in minutes</h2>
+      <p class="section-desc">Everything you need to start developing locally.</p>
     </div>
-    <div class="card">
-      <h3>Docker (Full Stack)</h3>
-      <p style="font-family:monospace; font-size:0.8rem; line-height:2;">
-        <span style="color:var(--green);">make dev</span> &mdash; all services + infra<br>
-        <span style="color:var(--green);">make dev-down</span> &mdash; stop everything<br>
-        <span style="color:var(--green);">make infra-down</span> &mdash; stop infra only<br>
-        <span style="color:var(--green);">make clean</span> &mdash; remove artifacts
-      </p>
-    </div>
-    <div class="card">
-      <h3>Kubernetes</h3>
-      <p style="font-family:monospace; font-size:0.8rem; line-height:2;">
-        <span style="color:var(--green);">kubectl apply -f</span><br>
-        &nbsp;&nbsp;deployments/k8s/base/<br>
-        <br>
-        HPA: 2&ndash;10 replicas, CPU 70%
-      </p>
+
+    <div class="qs-layout fade-in">
+      <div class="qs-steps">
+        <div class="qs-step">
+          <div class="num">1</div>
+          <div class="info">
+            <h3>Clone the repository</h3>
+            <p><code>git clone https://github.com/gunk2/go-ms.git && cd go-ms</code></p>
+          </div>
+        </div>
+        <div class="qs-step">
+          <div class="num">2</div>
+          <div class="info">
+            <h3>Start infrastructure</h3>
+            <p><code>make infra</code></p>
+            <p style="margin-top:4px">Launches PostgreSQL, Redis, Kafka, Prometheus, Grafana</p>
+          </div>
+        </div>
+        <div class="qs-step">
+          <div class="num">3</div>
+          <div class="info">
+            <h3>Apply migrations</h3>
+            <p><code>make migrate-up</code></p>
+          </div>
+        </div>
+        <div class="qs-step">
+          <div class="num">4</div>
+          <div class="info">
+            <h3>Run all services</h3>
+            <p><code>make dev-local</code></p>
+            <p style="margin-top:4px">Hot reload with Air &mdash; Gateway :8000, Identity :8001, Ticket :8002</p>
+          </div>
+        </div>
+        <div class="qs-step">
+          <div class="num">5</div>
+          <div class="info">
+            <h3>Verify</h3>
+            <p><code>curl http://localhost:8000/health/ready</code></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-window">
+        <div class="bar">
+          <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <span class="title">Makefile</span>
+        </div>
+        <pre><span class="cm"># Development</span>
+<span class="fn">make dev-local</span>     <span class="cm"># run with hot reload</span>
+<span class="fn">make generate</span>      <span class="cm"># sqlc + proto + swagger</span>
+<span class="fn">make test</span>          <span class="cm"># run all tests</span>
+<span class="fn">make lint</span>          <span class="cm"># golangci-lint</span>
+
+<span class="cm"># Docker</span>
+<span class="fn">make dev</span>           <span class="cm"># full stack</span>
+<span class="fn">make dev-down</span>      <span class="cm"># stop everything</span>
+<span class="fn">make build</span>         <span class="cm"># optimized binaries</span>
+
+<span class="cm"># Kubernetes</span>
+<span class="fn">kubectl apply -f</span> deployments/k8s/base/
+<span class="cm"># HPA: 2-10 replicas, CPU 70%</span></pre>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <p style="margin-bottom:0.5rem;">
-    <strong style="color:var(--text);">go-ms</strong> &mdash; Production-Ready Go Microservices
-  </p>
-  <p>
-    Built with Go 1.25 &middot; DDD/CQRS &middot; Kafka &middot; PostgreSQL &middot; Redis &middot; Kubernetes
-  </p>
+  <div class="container">
+    <div class="brand">go-ms <span>framework</span></div>
+    <p class="tagline">Production-ready Go microservices with DDD, CQRS, and cloud-native infrastructure.</p>
+    <p style="color:var(--text2);font-size:.9rem;margin-bottom:24px">Built by <strong style="color:var(--text)">Nguyen Dinh At</strong></p>
+    <div class="techs">
+      <span>Go 1.25</span>
+      <span>&middot;</span>
+      <span>Gin</span>
+      <span>&middot;</span>
+      <span>gRPC</span>
+      <span>&middot;</span>
+      <span>PostgreSQL</span>
+      <span>&middot;</span>
+      <span>Redis</span>
+      <span>&middot;</span>
+      <span>Kafka</span>
+      <span>&middot;</span>
+      <span>Docker</span>
+      <span>&middot;</span>
+      <span>Kubernetes</span>
+      <span>&middot;</span>
+      <span>Prometheus</span>
+    </div>
+  </div>
 </footer>
 
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<script>
+// ═══ SCROLL FADE-IN ═══
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ═══ NAV SCROLL ═══
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
+
+// ═══ SMOOTH ANCHOR ═══
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// ═══ CURSOR GLOW (follows mouse) ═══
+const glow = document.getElementById('cursorGlow');
+let mx = 0, my = 0, gx = 0, gy = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animateGlow() {
+  gx += (mx - gx) * 0.08;
+  gy += (my - gy) * 0.08;
+  glow.style.left = gx + 'px';
+  glow.style.top = gy + 'px';
+  requestAnimationFrame(animateGlow);
+})();
+
+// ═══ PARTICLES CANVAS ═══
+(function() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    const hero = canvas.parentElement.parentElement;
+    W = canvas.width = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.vx = (Math.random() - 0.5) * 0.3;
+      this.vy = (Math.random() - 0.5) * 0.3;
+      this.size = Math.random() * 1.5 + 0.5;
+      this.alpha = Math.random() * 0.4 + 0.1;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(99,102,241,${this.alpha})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+  function connectParticles() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(99,102,241,${0.06 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // Mouse interaction — particles near cursor get pushed
+  let pmx = 0, pmy = 0;
+  canvas.parentElement.parentElement.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    pmx = e.clientX - rect.left;
+    pmy = e.clientY - rect.top;
+  });
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      // Mouse repulsion
+      const dx = p.x - pmx, dy = p.y - pmy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150 && dist > 0) {
+        const force = (150 - dist) / 150 * 0.8;
+        p.vx += (dx / dist) * force * 0.1;
+        p.vy += (dy / dist) * force * 0.1;
+      }
+      // Damping
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      p.update();
+      p.draw();
+    });
+    connectParticles();
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ═══ MOUSE PARALLAX ON ORBS ═══
+document.querySelector('.hero').addEventListener('mousemove', e => {
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  const dx = (e.clientX - cx) / cx;
+  const dy = (e.clientY - cy) / cy;
+  document.querySelectorAll('.orb').forEach((orb, i) => {
+    const speed = (i + 1) * 15;
+    orb.style.transform = `translate(${dx * speed}px, ${dy * speed}px)`;
+  });
+});
+
+// ═══ 3D TILT ON CARDS ═══
+document.querySelectorAll('.stack-card, .svc, .feature, .pattern-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const rotateX = (y - cy) / cy * -4;
+    const rotateY = (x - cx) / cx * 4;
+    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+
+// ═══ ANIMATED COUNTERS ═══
+function animateCounter(el, target, suffix = '') {
+  const isDecimal = String(target).includes('.');
+  const duration = 2000;
+  const start = performance.now();
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+    const current = eased * target;
+    el.textContent = (isDecimal ? current.toFixed(0) : Math.floor(current)) + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const el = e.target;
+      const text = el.textContent.trim();
+      const match = text.match(/^(~?)(\d+)(k?\+?)/);
+      if (match) {
+        const prefix = match[1];
+        const num = parseInt(match[2]);
+        const suffix = match[3];
+        el.textContent = prefix + '0' + suffix;
+        setTimeout(() => animateCounter(el, num, suffix ? suffix : ''), 200);
+      }
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.hero-stat .val, .perf-cell .val').forEach(el => counterObserver.observe(el));
+
+// ═══ TYPING EFFECT FOR CODE ═══
+(function() {
+  const codeWindow = document.querySelector('.code-window pre');
+  if (!codeWindow) return;
+  const html = codeWindow.innerHTML;
+  codeWindow.innerHTML = '';
+  codeWindow.style.minHeight = '340px';
+  let i = 0;
+  const speed = 12;
+  let inTag = false;
+  let buffer = '';
+
+  function type() {
+    if (i >= html.length) return;
+    const char = html[i];
+    if (char === '<') inTag = true;
+    if (inTag) {
+      buffer += char;
+      if (char === '>') {
+        inTag = false;
+        codeWindow.innerHTML += buffer;
+        buffer = '';
+      }
+      i++;
+      type(); // Process tags instantly
+      return;
+    }
+    codeWindow.innerHTML += char;
+    i++;
+    setTimeout(type, char === '\n' ? speed * 3 : speed);
+  }
+
+  // Start typing when code window is visible
+  const typingObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        setTimeout(type, 500);
+        typingObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  typingObserver.observe(codeWindow.parentElement);
+})();
+
+// ═══ ANIMATED GRADIENT BORDERS ON HOVER ═══
+document.querySelectorAll('.code-window').forEach(el => el.classList.add('glow-border'));
+
+// ═══ FLOATING TECH KEYWORDS ═══
+(function() {
+  const hero = document.querySelector('.hero-bg');
+  const words = ['DDD','CQRS','gRPC','Kafka','Redis','PostgreSQL','Docker','K8s','JWT','Outbox','Gin','Go','Prometheus','Circuit Breaker','sqlc','Protobuf'];
+  words.forEach((word, i) => {
+    const span = document.createElement('span');
+    span.className = 'float-icon';
+    span.textContent = word;
+    span.style.left = Math.random() * 90 + 5 + '%';
+    span.style.animationDuration = (15 + Math.random() * 20) + 's';
+    span.style.animationDelay = (Math.random() * 20) + 's';
+    span.style.fontSize = (0.6 + Math.random() * 0.4) + 'rem';
+    hero.appendChild(span);
+  });
+})();
+</script>
 </body>
 </html>
