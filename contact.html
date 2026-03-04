@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact &mdash; go-ms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050505;--bg1:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+  --border:#ffffff0d;--border2:#ffffff1a;
+  --text:#fafafa;--text2:#a1a1aa;--text3:#71717a;
+  --blue:#3b82f6;--indigo:#6366f1;--violet:#8b5cf6;
+  --emerald:#10b981;--cyan:#06b6d4;--amber:#f59e0b;
+  --rose:#f43f5e;--pink:#ec4899;
+  --glow-blue:0 0 80px rgba(59,130,246,.15);
+  --glow-violet:0 0 80px rgba(139,92,246,.15);
+  --radius:16px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;min-height:100vh}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:0 24px;background:rgba(5,5,5,.8);backdrop-filter:blur(20px) saturate(1.8);border-bottom:1px solid var(--border)}
+nav .inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+nav .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:1.2rem;color:var(--text);letter-spacing:-.02em}
+nav .logo .mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(99,102,241,.4)}
+nav .links{display:flex;align-items:center;gap:32px}
+nav .links a{color:var(--text2);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .2s;position:relative}
+nav .links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:1px;transition:width .3s ease}
+nav .links a:hover{color:var(--text)}
+nav .links a:hover::after{width:100%}
+nav .links a.active{color:var(--text)}
+nav .links a.active::after{width:100%}
+nav .gh{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:.8rem;font-weight:600;text-decoration:none;transition:all .3s}
+nav .gh:hover{background:var(--bg4);border-color:#ffffff30;box-shadow:0 0 20px rgba(255,255,255,.05)}
+nav .gh svg{width:16px;height:16px;fill:currentColor}
+
+/* ═══ AURORA ═══ */
+.aurora{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.aurora-band{position:absolute;width:200%;left:-50%;height:300px;filter:blur(80px);opacity:0;animation:aurora-wave 8s ease-in-out infinite}
+.aurora-band:nth-child(1){top:5%;background:linear-gradient(90deg,transparent 0%,rgba(59,130,246,.08) 20%,rgba(139,92,246,.1) 40%,rgba(16,185,129,.06) 60%,transparent 100%);animation-delay:0s;animation-duration:8s}
+.aurora-band:nth-child(2){top:15%;background:linear-gradient(90deg,transparent 0%,rgba(139,92,246,.06) 25%,rgba(236,72,153,.06) 50%,transparent 100%);animation-delay:-3s;animation-duration:11s}
+@keyframes aurora-wave{0%{transform:translateX(-30%) scaleY(1) rotate(-2deg);opacity:0}15%{opacity:.5}50%{transform:translateX(30%) scaleY(1.3) rotate(2deg);opacity:.6}85%{opacity:.4}100%{transform:translateX(-30%) scaleY(1) rotate(-2deg);opacity:0}}
+
+/* ═══ CURSOR GLOW ═══ */
+.cursor-glow{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(99,102,241,.07) 0%,transparent 70%);transform:translate(-50%,-50%);transition:opacity .3s}
+
+/* ═══ MAIN LAYOUT ═══ */
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120px 24px 80px}
+.container{max-width:720px;width:100%;margin:0 auto}
+
+/* ═══ HEADER ═══ */
+.page-header{text-align:center;margin-bottom:56px}
+.page-header .back{display:inline-flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:.85rem;font-weight:500;margin-bottom:24px;transition:color .2s}
+.page-header .back:hover{color:var(--text)}
+.page-header .back svg{width:16px;height:16px}
+.page-header h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1.1;margin-bottom:16px}
+.page-header h1 .gradient{background:linear-gradient(135deg,#fff 0%,var(--blue) 50%,var(--violet) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-header p{color:var(--text2);font-size:1.05rem;max-width:480px;margin:0 auto;line-height:1.7}
+
+/* ═══ FORM CARD ═══ */
+.form-card{background:var(--bg1);border:1px solid var(--border2);border-radius:var(--radius);padding:48px 40px;position:relative;overflow:hidden}
+.form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),var(--violet),transparent);opacity:.6}
+/* Spotlight follow */
+.form-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%),rgba(99,102,241,.04) 0%,transparent 50%);opacity:0;transition:opacity .4s;pointer-events:none}
+.form-card:hover::after{opacity:1}
+
+/* ═══ FORM ELEMENTS ═══ */
+.form-group{margin-bottom:24px;position:relative}
+.form-group label{display:block;font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px;letter-spacing:.02em}
+.form-group label .required{color:var(--rose);margin-left:2px}
+
+.form-input,.form-textarea{width:100%;padding:14px 18px;background:var(--bg);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:.95rem;transition:all .3s;outline:none}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text3)}
+.form-input:focus,.form-textarea:focus{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.1),0 0 20px rgba(99,102,241,.08)}
+.form-input:hover,.form-textarea:hover{border-color:rgba(255,255,255,.15)}
+.form-textarea{min-height:140px;resize:vertical;line-height:1.6}
+
+/* ═══ INPUT GLOW LINE ═══ */
+.input-glow{position:absolute;bottom:0;left:50%;width:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:1px;transform:translateX(-50%);transition:width .3s ease}
+.form-input:focus ~ .input-glow,.form-textarea:focus ~ .input-glow{width:80%}
+
+/* ═══ ROW (2 columns) ═══ */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+/* ═══ SUBJECT SELECT ═══ */
+.form-select{width:100%;padding:14px 18px;background:var(--bg);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:.95rem;transition:all .3s;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.form-select:focus{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.1),0 0 20px rgba(99,102,241,.08)}
+.form-select:hover{border-color:rgba(255,255,255,.15)}
+.form-select option{background:var(--bg2);color:var(--text)}
+
+/* ═══ SUBMIT BUTTON ═══ */
+.btn-submit{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 32px;border-radius:12px;font-size:1rem;font-weight:700;text-decoration:none;transition:all .3s;cursor:pointer;border:none;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;box-shadow:0 0 0 1px rgba(99,102,241,.3),var(--glow-blue);margin-top:8px;letter-spacing:.01em}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(99,102,241,.5),0 0 120px rgba(59,130,246,.25)}
+.btn-submit:active{transform:translateY(0)}
+.btn-submit::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .5s}
+.btn-submit:hover::before{left:100%}
+.btn-submit svg{width:18px;height:18px;transition:transform .3s}
+.btn-submit:hover svg{transform:translateX(3px)}
+
+/* ═══ SUCCESS STATE ═══ */
+.form-success{display:none;text-align:center;padding:48px 24px}
+.form-success.show{display:block}
+.form-success .check{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),#059669);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;animation:check-pop .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes check-pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.form-success .check svg{width:28px;height:28px;color:#fff}
+.form-success h3{font-size:1.3rem;font-weight:800;margin-bottom:8px}
+.form-success p{color:var(--text2);font-size:.95rem}
+
+/* ═══ SOCIAL LINKS ═══ */
+.social-section{margin-top:48px;text-align:center}
+.social-section h3{font-size:.85rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px}
+.social-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.social-link{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:12px;background:var(--bg1);border:1px solid var(--border2);color:var(--text2);text-decoration:none;font-size:.9rem;font-weight:600;transition:all .3s}
+.social-link:hover{color:var(--text);border-color:#ffffff30;transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.social-link svg{width:18px;height:18px;fill:currentColor}
+.social-link.github:hover{border-color:rgba(255,255,255,.2);box-shadow:0 0 20px rgba(255,255,255,.05)}
+.social-link.email:hover{border-color:rgba(59,130,246,.3);color:var(--blue);box-shadow:0 0 20px rgba(59,130,246,.1)}
+.social-link.linkedin:hover{border-color:rgba(59,130,246,.3);color:#0a66c2;box-shadow:0 0 20px rgba(10,102,194,.15)}
+
+/* ═══ FOOTER ═══ */
+footer{margin-top:auto;padding:32px 24px;text-align:center;border-top:1px solid var(--border);position:relative;z-index:1}
+footer p{color:var(--text3);font-size:.8rem}
+footer a{color:var(--text2);text-decoration:none;transition:color .2s}
+footer a:hover{color:var(--text)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  nav .links{display:none}
+  .form-card{padding:32px 24px}
+  .form-row{grid-template-columns:1fr}
+  .page{padding:100px 16px 60px}
+}
+</style>
+</head>
+<body>
+
+<!-- AURORA BG -->
+<div class="aurora">
+  <div class="aurora-band"></div>
+  <div class="aurora-band"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a href="index.html" class="logo">
+      <div class="mark">ms</div>
+      go-ms
+    </a>
+    <div class="links">
+      <a href="index.html#architecture">Architecture</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#services">Services</a>
+      <a href="contact.html" class="active">Contact</a>
+    </div>
+    <a href="https://github.com/gunk2/go-ms" class="gh" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="page">
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <a href="index.html" class="back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        Back to home
+      </a>
+      <h1>Get in <span class="gradient">touch</span></h1>
+      <p>Have a question, feedback, or want to collaborate? Fill out the form below and I'll get back to you.</p>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-card" id="formCard">
+      <form id="contactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name <span class="required">*</span></label>
+            <input type="text" class="form-input" name="name" placeholder="Your name" required>
+            <div class="input-glow"></div>
+          </div>
+          <div class="form-group">
+            <label>Email <span class="required">*</span></label>
+            <input type="email" class="form-input" name="email" placeholder="your@email.com" required>
+            <div class="input-glow"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Subject</label>
+          <select class="form-select" name="subject">
+            <option value="" disabled selected>Select a topic</option>
+            <option value="general">General Inquiry</option>
+            <option value="bug">Bug Report</option>
+            <option value="feature">Feature Request</option>
+            <option value="collaboration">Collaboration</option>
+            <option value="hiring">Hiring / Job Opportunity</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Message <span class="required">*</span></label>
+          <textarea class="form-textarea" name="message" placeholder="Tell me what's on your mind..." required></textarea>
+          <div class="input-glow"></div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Send Message
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+
+      <!-- Success state -->
+      <div class="form-success" id="formSuccess">
+        <div class="check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3>Message sent!</h3>
+        <p>Thank you for reaching out. I'll respond as soon as possible.</p>
+      </div>
+    </div>
+
+    <!-- SOCIAL LINKS -->
+    <div class="social-section">
+      <h3>Or reach out directly</h3>
+      <div class="social-links">
+        <a href="mailto:nguyendinhat.dev@gmail.com" class="social-link email">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
+          Email
+        </a>
+        <a href="https://github.com/gunk2" target="_blank" class="social-link github">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="https://linkedin.com/in/nguyendinhat" target="_blank" class="social-link linkedin">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>&copy; 2026 <a href="index.html">go-ms</a> &mdash; Built by Nguyen Dinh At</p>
+</footer>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<script>
+// ═══ CURSOR GLOW ═══
+const glow = document.getElementById('cursorGlow');
+let mx = 0, my = 0, gx = 0, gy = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animateGlow() {
+  gx += (mx - gx) * 0.08;
+  gy += (my - gy) * 0.08;
+  glow.style.left = gx + 'px';
+  glow.style.top = gy + 'px';
+  requestAnimationFrame(animateGlow);
+})();
+
+// ═══ FORM CARD SPOTLIGHT ═══
+const formCard = document.getElementById('formCard');
+formCard.addEventListener('mousemove', e => {
+  const rect = formCard.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+  const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+  formCard.style.setProperty('--mouse-x', x + '%');
+  formCard.style.setProperty('--mouse-y', y + '%');
+});
+
+// ═══ FORM SUBMIT ═══
+const form = document.getElementById('contactForm');
+const success = document.getElementById('formSuccess');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const data = new FormData(form);
+  const name = data.get('name');
+  const email = data.get('email');
+  const subject = data.get('subject') || 'General Inquiry';
+  const message = data.get('message');
+
+  // Option 1: mailto fallback
+  const mailSubject = encodeURIComponent('[go-ms] ' + subject + ' from ' + name);
+  const mailBody = encodeURIComponent(
+    'Name: ' + name + '\n' +
+    'Email: ' + email + '\n' +
+    'Subject: ' + subject + '\n\n' +
+    message
+  );
+  window.location.href = 'mailto:dinhatnguyen81@gmail.com?subject=' + mailSubject + '&body=' + mailBody;
+
+  // Show success state
+  form.style.display = 'none';
+  success.classList.add('show');
+});
+
+// ═══ INPUT FOCUS ANIMATIONS ═══
+document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+  input.addEventListener('focus', () => {
+    input.parentElement.style.transform = 'translateY(-1px)';
+  });
+  input.addEventListener('blur', () => {
+    input.parentElement.style.transform = '';
+  });
+});
+</script>
+</body>
+</html>
