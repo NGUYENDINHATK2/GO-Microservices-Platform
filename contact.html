@@ -4,6 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact &mdash; go-ms</title>
+
+<!-- SEO -->
+<meta name="description" content="Get in touch with the go-ms team. Questions, feedback, bug reports, feature requests, or collaboration inquiries — we'd love to hear from you.">
+<meta name="keywords" content="go-ms, contact, feedback, collaboration, bug report, feature request, Nguyen Dinh At">
+<meta name="author" content="Nguyen Dinh At">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://gunk2.github.io/go-ms/contact.html">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gunk2.github.io/go-ms/contact.html">
+<meta property="og:title" content="Contact — go-ms Framework">
+<meta property="og:description" content="Have a question or want to collaborate? Get in touch with the go-ms creator.">
+<meta property="og:image" content="https://gunk2.github.io/go-ms/og-image.png">
+<meta property="og:site_name" content="go-ms">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Contact — go-ms Framework">
+<meta name="twitter:description" content="Have a question or want to collaborate? Get in touch with the go-ms creator.">
+<meta name="twitter:image" content="https://gunk2.github.io/go-ms/og-image.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact go-ms",
+  "description": "Get in touch with the go-ms creator for questions, feedback, or collaboration.",
+  "url": "https://gunk2.github.io/go-ms/contact.html"
+}
+</script>
+
+<!-- Theme -->
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -155,6 +193,7 @@ footer a:hover{color:var(--text)}
       <a href="index.html#architecture">Architecture</a>
       <a href="index.html#features">Features</a>
       <a href="index.html#services">Services</a>
+      <a href="about.html">About</a>
       <a href="contact.html" class="active">Contact</a>
     </div>
     <a href="https://github.com/gunk2/go-ms" class="gh" target="_blank">
@@ -302,7 +341,7 @@ form.addEventListener('submit', function(e) {
     'Subject: ' + subject + '\n\n' +
     message
   );
-  window.location.href = 'mailto:dinhatnguyen81@gmail.com?subject=' + mailSubject + '&body=' + mailBody;
+  window.location.href = 'mailto:nguyendinhat.dev@gmail.com?subject=' + mailSubject + '&body=' + mailBody;
 
   // Show success state
   form.style.display = 'none';
